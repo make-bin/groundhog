@@ -1,0 +1,85 @@
+server:
+  host: "0.0.0.0"
+  port: 8080
+  read_timeout: 30s
+  write_timeout: 30s
+
+database:
+  host: "10.65.104.78"
+  port: 30335
+  user: "postgresadmin"
+  password: "admin12345"
+  dbname: "openclaw"
+  sslmode: "disable"
+  max_idle_conns: 10
+  max_open_conns: 100
+  conn_max_lifetime: 1h
+
+redis:
+  addr: "10.65.104.78:30176"
+  password: "ecpdemo1234"
+  db: 0
+
+jwt:
+  secret: "change-me-in-production"
+  access_token_ttl: 24h
+  refresh_token_ttl: 168h
+
+log:
+  level: "info"
+  format: "console"
+
+migration:
+  enabled: true
+  source_type: "filesystem"
+  source_path: "./migrations"
+  lock_timeout: 30s
+  table_name: "schema_migrations"
+
+# MCP (Model Context Protocol) tool servers
+mcp:
+  enabled: true
+  servers:
+    - name: "filesystem"
+      command: "npx"
+      args: ["-y", "@modelcontextprotocol/server-filesystem", "/tmp"]
+      require_approval: false
+      dangerous_tools: ["write_file", "edit_file", "create_directory", "move_file"]
+    # - name: "github"
+    #   command: "npx"
+    #   args: ["-y", "@modelcontextprotocol/server-github"]
+    #   require_approval: true           # all github tools need approval
+
+# Skills - auto-loaded from multiple directories (openclaw-compatible)
+# Priority: extra_dirs < ~/.openclaw/skills < ~/.agents/skills < .agents/skills < skills/
+skills:
+  dir: "./skills"          # workspace skills dir (highest priority)
+  extra_dirs: []           # additional dirs (lowest priority)
+# pprof profiling (development only)
+pprof:
+  enabled: false
+  addr: "localhost:6060"
+
+# AI model providers
+models:
+  # Default provider and model used when a session does not specify one.
+  default_provider: "openai_compat"
+  default_model: "deepseek-ai/DeepSeek-V3.1-Terminus"
+
+  providers:
+    # OpenAI-compatible (SiliconFlow)
+    openai_compat:
+      base_url: "https://api.siliconflow.cn/v1"
+      api_keys:
+        - "sk-nmsnjztalkjdpqvlfljrkvuphiipirvstdadxslenltewwdo"
+      timeout: 120s
+
+memory:
+  enabled: true
+  embedding_base_url: "https://dashscope.aliyuncs.com/compatible-mode"
+  embedding_api_key: "sk-06c4d797fad14b6aa7c24f10030eba4b"
+  embedding_model: "text-embedding-v4"
+  embedding_dim: 1024
+  hybrid_vector_weight: 0.7
+  hybrid_keyword_weight: 0.3
+  search_limit: 10

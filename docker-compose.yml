@@ -1,0 +1,63 @@
+version: "3.9"
+
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: groundhog:latest
+    container_name: groundhog-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - GROUNDOG_DATABASE_HOST=postgres
+      - GROUNDOG_DATABASE_PORT=5432
+      - GROUNDOG_DATABASE_USER=groundhog
+      - GROUNDOG_DATABASE_PASSWORD=groundhog
+      - GROUNDOG_DATABASE_DBNAME=groundhog
+      - GROUNDOG_DATABASE_SSLMODE=disable
+      - GROUNDOG_REDIS_ADDR=redis:6379
+      - GROUNDOG_LOG_LEVEL=info
+      - GROUNDOG_LOG_FORMAT=json
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: groundhog-postgres
+    environment:
+      POSTGRES_USER: groundhog
+      POSTGRES_PASSWORD: groundhog
+      POSTGRES_DB: groundhog
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U groundhog"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: groundhog-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:

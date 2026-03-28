@@ -1,0 +1,9 @@
+bin/
+*.log
+*.pid
+.git/
+.gitignore
+.golangci.yml
+web/*/node_modules/
+web/*/dist/
+perf/

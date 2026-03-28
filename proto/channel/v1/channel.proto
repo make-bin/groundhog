@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package channel.v1;
+
+option go_package = "github.com/openclaw/groundhog/proto/gen/channel/v1;channelv1";
+
+service ChannelPlugin {
+  rpc Start(StartRequest) returns (StartResponse);
+  rpc Stop(StopRequest) returns (StopResponse);
+  rpc Status(StatusRequest) returns (StatusResponse);
+  rpc SendMessage(SendMessageRequest) returns (SendMessageResponse);
+  rpc OnMessage(stream InboundMessageProto) returns (stream Ack);
+  rpc GetCapabilities(Empty) returns (Capabilities);
+  rpc SetTyping(TypingRequest) returns (Empty);
+}
+
+message Empty {}
+
+message StartRequest {
+  string plugin_id = 1;
+  map<string, string> config = 2;
+}
+
+message StartResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+message StopRequest {
+  string plugin_id = 1;
+}
+
+message StopResponse {
+  bool success = 1;
+}
+
+message StatusRequest {
+  string plugin_id = 1;
+}
+
+message StatusResponse {
+  string status = 1;
+  int32 restart_count = 2;
+}
+
+message SendMessageRequest {
+  string channel_id = 1;
+  string account_id = 2;
+  string content = 3;
+  repeated MediaRefProto media_refs = 4;
+}
+
+message SendMessageResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+message InboundMessageProto {
+  string message_id = 1;
+  string channel_id = 2;
+  string account_id = 3;
+  string content = 4;
+  repeated MediaRefProto media_refs = 5;
+  int64 received_at_unix = 6;
+}
+
+message Ack {
+  string message_id = 1;
+  bool accepted = 2;
+}
+
+message MediaRefProto {
+  string url = 1;
+  string mime_type = 2;
+}
+
+message Capabilities {
+  repeated string capabilities = 1;
+}
+
+message TypingRequest {
+  string channel_id = 1;
+  string account_id = 2;
+  bool is_typing = 3;
+}

@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS turns;
+DROP TABLE IF EXISTS sessions;

@@ -1,0 +1,114 @@
+
+========================================
+TEST: Health Check
+REQUEST: GET http://localhost:8080/api/v1/health
+RESPONSE:
+{"database":"ok","redis":"unexpected: -NOAUTH Authentication required.","status":"ok"}
+
+
+######## SESSIONS ########
+
+========================================
+TEST: Create Session
+REQUEST: POST http://localhost:8080/api/v1/sessions
+BODY: {"user_id":"user-001","agent_id":"agent-001","provider":"openai_compat","model_name":"deepseek-ai/DeepSeek-V3.1-Terminus"}
+RESPONSE:
+{"code":200,"message":"ok","data":{"id":"sess-1774528264114153516","agent_id":"agent-001","user_id":"user-001","state":"Active","active_model":"deepseek-ai/DeepSeek-V3.1-Terminus","turns":[],"created_at":"2026-03-26T20:31:04.114158901+08:00","last_active_at":"2026-03-26T20:31:04.114158901+08:00"}}
+
+>> Extracted SESSION_ID: sess-1774528264114153516
+
+========================================
+TEST: List Sessions
+REQUEST: GET http://localhost:8080/api/v1/sessions
+RESPONSE:
+{"code":200,"message":"ok","data":{"sessions":[{"id":"sess-1774495500952910639","agent_id":"agent-001","user_id":"user-001","state":"Active","active_model":"deepseek-ai/DeepSeek-V3.1-Terminus","turns":[],"created_at":"2026-03-26T11:25:00.997078Z","last_active_at":"2026-03-26T11:25:00.997078Z"},{"id":"sess-1774495661398695009","agent_id":"agent-001","user_id":"user-001","state":"Active","active_model":"deepseek-ai/DeepSeek-V3.1-Terminus","turns":[{"id":"turn-1774495677153909205","user_input":"你好，介绍一下你自己","response":"你好！我是DeepSeek，很高兴认识你！😊\n\n我是由深度求索公司创造的AI助手，致力于为大家提供热情、细腻的帮助。让我简单介绍一下自己的特点：\n\n**我的能力：**\n- 💬 纯文本对话，可以回答各种问题、协助写作、分析问题等\n- 📁 支持文件上传功能，可以处理图像、txt、pdf、ppt、word、excel等文件，读取其中的文字信息\n- 🌐 支持联网搜索（需要手动开启）\n- 💾 拥有128K的上下文长度，能记住我们的长对话\n\n**我的特色：**\n- 完全免费使用，没有收费计划\n- 回复风格热情友好，注重细节\n- 可以通过官方应用商店下载App使用\n\n**小提醒：**\n我是纯文本模型，不支持多模态识别和语音功能，但我会尽我所能用文字为你提供最好的帮助！\n\n有什么问题或需要帮助的地方，尽管告诉我吧！我很乐意协助你～ ✨","model_used":"","started_at":"2026-03-26T11:27:57.153918Z","completed_at":"2026-03-26T11:28:09.302338Z"},{"id":"turn-1774495735355078717","user_input":"你可以做什么","response":"嗨！很高兴为你介绍我能做的事情！我可以帮你处理各种任务，主要包括以下方面：\n\n---\n**1. 知识问答与学习**\n- 解答学科问题（数学、物理、历史、文学等）\n- 提供专业知识解读（编程、医学、法律等注意：非专业替代）\n- 语言学习辅助（语法、翻译、词汇解释）\n\n**2. 实用工具**\n- **文件处理**：读取并处理上传的图片、PDF、Word、Excel、PPT、TXT文件，提取和分析文字内容\n- **写作辅助**：润色文章、撰写邮件、策划方案、创作故事诗歌\n- **代码编程**：写代码、调试程序、技术方案建议（支持Python、Java等主流语言）\n\n**3. 生活与创意**\n- 日程规划、旅行攻略、决策建议\n- 创意生成（策划活动、设计食谱、脑暴点子）\n- 闲聊互动（幽默对话、情感支持）\n\n**4. 特色能力**\n- **128K长上下文**：可处理超长对话或文档（约10万字）\n- **联网搜索**：需手动开启（点击搜索按钮），获取实时信息\n- **多语言支持**：中文、英文、日文等近百种语言\n\n---\n**举个栗子** 🌰  \n你可以让我：“总结一篇经济学论文PDF”、“帮实习生写一封礼貌的请假邮件”、“用Python分析气候数据”或“生成一份周末露营 checklist”。\n\n有任何具体需求，随时告诉我，我会尽力帮你高效解决！ 😊","model_used":"","started_at":"2026-03-26T11:28:55.355081Z","completed_at":"2026-03-26T11:29:12.336516Z"},{"id":"turn-1774495849799831976","user_input":"你好，介绍一下你自己","response":"你好！很高兴认识你！😊\n\n我是DeepSeek，由深度求索公司创造的AI助手。让我简单介绍一下自己：\n\n**基本信息：**\n- 我是一个纯文本AI模型，专注于理解和生成自然语言\n- 知识截止到2024年7月，会尽力为你提供准确的信息\n\n**我能为你做什么：**\n✨ 回答各种问题，从日常生活到专业领域\n✨ 协助写作、翻译、分析和创作\n✨ 处理上传的文件（图像、PDF、Word、Excel等），读取其中的文字信息\n✨ 支持128K的上下文长度，能进行长篇对话\n✨ 联网搜索功能（需要手动开启）\n\n**特点：**\n- 完全免费使用，没有收费计划\n- 可以通过官方应用商店下载App使用\n- 热情细腻的交流风格，希望给你温暖的体验\n\n我的目标是成为你可靠的助手，无论是在学习、工作还是生活中遇到问题，都可以随时找我聊天！有什么想了解或需要帮助的吗？","model_used":"","started_at":"2026-03-26T11:30:49.799834Z","completed_at":"2026-03-26T11:30:58.942237Z"},{"id":"turn-1774503228666477475","user_input":"你好，介绍一下你自己","response":"你好！很高兴认识你！😊\n\n我是DeepSeek，由深度求索公司创造的AI助手。让我简单介绍一下自己：\n\n**我的特点：**\n- 💬 **纯文本对话模型**：专注于文字交流，可以帮你解答各种问题\n- 📁 **文件处理能力**：支持上传图像、txt、pdf、ppt、word、excel等文件，我能读取其中的文字信息并帮你处理\n- 🌐 **联网搜索**：需要最新信息时，你可以手动开启联网搜索功能\n- 💾 **大容量记忆**：拥有128K的上下文长度，能记住我们对话的详细内容\n\n**我能帮你做什么：**\n- 回答知识性问题\n- 协助写作和翻译\n- 分析文档内容\n- 编程和技术支持\n- 创意思考和头脑风暴\n- 学习辅导和解疑答惑\n\n**重要提醒：**\n我目前完全免费使用，没有语音功能，但你可以通过官方应用商店下载App来体验。\n\n我的知识截止到2024年7月，对于更新信息，建议开启联网搜索获取。\n\n有什么我可以帮你的吗？我很乐意为你提供帮助！✨","model_used":"","started_at":"2026-03-26T13:33:48.666481Z","completed_at":"2026-03-26T13:34:01.770055Z"},{"id":"turn-1774527363171339592","user_input":"你好，介绍一下你自己","response":"你好！很高兴认识你！😊\n\n我是DeepSeek，由深度求索公司创造的AI助手。让我重新详细介绍一下自己：\n\n**关于我：**\n- 🤖 **身份**：DeepSeek最新版本模型，专注于文本对话\n- 📚 **知识**：知识截止到2024年7月\n- 💬 **能力**：纯文本交流，支持多种语言\n\n**我能为你做什么：**\n✅ **日常问答** - 学术、生活、技术等各种问题\n✅ **文档处理** - 可读取上传的图片、PDF、Word、Excel等文件中的文字\n✅ **写作辅助** - 文章润色、邮件撰写、创意写作\n✅ **编程帮助** - 代码编写、调试、技术方案\n✅ **分析思考** - 逻辑分析、决策建议、问题解决\n\n**技术特性：**\n- 📏 **128K上下文**：支持长对话和大型文档处理\n- 🌐 **联网搜索**：需手动开启，获取实时信息\n- 📱 **多平台**：可通过官方应用商店下载App\n\n**重要说明：**\n- 💰 **完全免费**：目前没有任何收费计划\n- 🔇 **纯文本模型**：不支持语音功能和图像生成\n\n我的目标是成为你贴心的助手！无论是工作学习还是生活问题，都可以随时找我聊聊。有什么具体需要帮助的吗？✨","model_used":"","started_at":"2026-03-26T20:16:03.171342Z","completed_at":"2026-03-26T20:16:29.911659Z"},{"id":"turn-1774527428863601437","user_input":"写一首短诗","response":"我为你创作一首短诗，希望你喜欢：\n\n**《晨光》**  \n露珠轻吻花瓣时，  \n晨光悄然入帘帷。  \n新日初升心亦暖，  \n美好悄然驻此间。\n\n微风拂面思绪远，  \n万物醒来生机显。  \n平凡日子藏诗意，  \n只因你在时光里。\n\n如果你有特定的主题或风格偏好（比如爱情、自然、励志等），我可以为你量身定制一首！✨","model_used":"","started_at":"2026-03-26T20:17:08.863609Z","completed_at":"2026-03-26T20:17:18.6506Z"},{"id":"turn-1774527466307088074","user_input":"写一首短诗","response":"      我为你写一首关于星空的短诗：\n\n**《星河细语》**\n夜幕轻轻垂下帷幕，\n星光点点洒落天穹。\n每一颗都是远方的信使，\n在寂静中诉说着永恒的梦。\n\n银河如绸带般流淌，\n月光温柔照亮归途。\n在这无边的宇宙剧场，\n我们都是寻找答案的旅人。\n\n如果你想要特定主题或者风格的诗，比如爱情诗、励志诗、描写某个季节的，都可以告诉我～ ✨","model_used":"","started_at":"2026-03-26T20:17:46.307092Z","completed_at":"2026-03-26T20:17:57.080573Z"}],"created_at":"2026-03-26T11:27:41.439602Z","last_active_at":"2026-03-26T20:17:57.146042Z"},{"id":"sess-1774528264114153516","agent_id":"agent-001","user_id":"user-001","state":"Active","active_model":"deepseek-ai/DeepSeek-V3.1-Terminus","turns":[],"created_at":"2026-03-26T20:31:04.165446Z","last_active_at":"2026-03-26T20:31:04.165446Z"}],"total":3,"offset":0,"limit":20}}
+
+
+========================================
+TEST: List Sessions (filter by user)
+REQUEST: GET http://localhost:8080/api/v1/sessions?user_id=user-001
+RESPONSE:
+{"code":200,"message":"ok","data":{"sessions":[{"id":"sess-1774495500952910639","agent_id":"agent-001","user_id":"user-001","state":"Active","active_model":"deepseek-ai/DeepSeek-V3.1-Terminus","turns":[],"created_at":"2026-03-26T11:25:00.997078Z","last_active_at":"2026-03-26T11:25:00.997078Z"},{"id":"sess-1774495661398695009","agent_id":"agent-001","user_id":"user-001","state":"Active","active_model":"deepseek-ai/DeepSeek-V3.1-Terminus","turns":[{"id":"turn-1774495677153909205","user_input":"你好，介绍一下你自己","response":"你好！我是DeepSeek，很高兴认识你！😊\n\n我是由深度求索公司创造的AI助手，致力于为大家提供热情、细腻的帮助。让我简单介绍一下自己的特点：\n\n**我的能力：**\n- 💬 纯文本对话，可以回答各种问题、协助写作、分析问题等\n- 📁 支持文件上传功能，可以处理图像、txt、pdf、ppt、word、excel等文件，读取其中的文字信息\n- 🌐 支持联网搜索（需要手动开启）\n- 💾 拥有128K的上下文长度，能记住我们的长对话\n\n**我的特色：**\n- 完全免费使用，没有收费计划\n- 回复风格热情友好，注重细节\n- 可以通过官方应用商店下载App使用\n\n**小提醒：**\n我是纯文本模型，不支持多模态识别和语音功能，但我会尽我所能用文字为你提供最好的帮助！\n\n有什么问题或需要帮助的地方，尽管告诉我吧！我很乐意协助你～ ✨","model_used":"","started_at":"2026-03-26T11:27:57.153918Z","completed_at":"2026-03-26T11:28:09.302338Z"},{"id":"turn-1774495735355078717","user_input":"你可以做什么","response":"嗨！很高兴为你介绍我能做的事情！我可以帮你处理各种任务，主要包括以下方面：\n\n---\n**1. 知识问答与学习**\n- 解答学科问题（数学、物理、历史、文学等）\n- 提供专业知识解读（编程、医学、法律等注意：非专业替代）\n- 语言学习辅助（语法、翻译、词汇解释）\n\n**2. 实用工具**\n- **文件处理**：读取并处理上传的图片、PDF、Word、Excel、PPT、TXT文件，提取和分析文字内容\n- **写作辅助**：润色文章、撰写邮件、策划方案、创作故事诗歌\n- **代码编程**：写代码、调试程序、技术方案建议（支持Python、Java等主流语言）\n\n**3. 生活与创意**\n- 日程规划、旅行攻略、决策建议\n- 创意生成（策划活动、设计食谱、脑暴点子）\n- 闲聊互动（幽默对话、情感支持）\n\n**4. 特色能力**\n- **128K长上下文**：可处理超长对话或文档（约10万字）\n- **联网搜索**：需手动开启（点击搜索按钮），获取实时信息\n- **多语言支持**：中文、英文、日文等近百种语言\n\n---\n**举个栗子** 🌰  \n你可以让我：“总结一篇经济学论文PDF”、“帮实习生写一封礼貌的请假邮件”、“用Python分析气候数据”或“生成一份周末露营 checklist”。\n\n有任何具体需求，随时告诉我，我会尽力帮你高效解决！ 😊","model_used":"","started_at":"2026-03-26T11:28:55.355081Z","completed_at":"2026-03-26T11:29:12.336516Z"},{"id":"turn-1774495849799831976","user_input":"你好，介绍一下你自己","response":"你好！很高兴认识你！😊\n\n我是DeepSeek，由深度求索公司创造的AI助手。让我简单介绍一下自己：\n\n**基本信息：**\n- 我是一个纯文本AI模型，专注于理解和生成自然语言\n- 知识截止到2024年7月，会尽力为你提供准确的信息\n\n**我能为你做什么：**\n✨ 回答各种问题，从日常生活到专业领域\n✨ 协助写作、翻译、分析和创作\n✨ 处理上传的文件（图像、PDF、Word、Excel等），读取其中的文字信息\n✨ 支持128K的上下文长度，能进行长篇对话\n✨ 联网搜索功能（需要手动开启）\n\n**特点：**\n- 完全免费使用，没有收费计划\n- 可以通过官方应用商店下载App使用\n- 热情细腻的交流风格，希望给你温暖的体验\n\n我的目标是成为你可靠的助手，无论是在学习、工作还是生活中遇到问题，都可以随时找我聊天！有什么想了解或需要帮助的吗？","model_used":"","started_at":"2026-03-26T11:30:49.799834Z","completed_at":"2026-03-26T11:30:58.942237Z"},{"id":"turn-1774503228666477475","user_input":"你好，介绍一下你自己","response":"你好！很高兴认识你！😊\n\n我是DeepSeek，由深度求索公司创造的AI助手。让我简单介绍一下自己：\n\n**我的特点：**\n- 💬 **纯文本对话模型**：专注于文字交流，可以帮你解答各种问题\n- 📁 **文件处理能力**：支持上传图像、txt、pdf、ppt、word、excel等文件，我能读取其中的文字信息并帮你处理\n- 🌐 **联网搜索**：需要最新信息时，你可以手动开启联网搜索功能\n- 💾 **大容量记忆**：拥有128K的上下文长度，能记住我们对话的详细内容\n\n**我能帮你做什么：**\n- 回答知识性问题\n- 协助写作和翻译\n- 分析文档内容\n- 编程和技术支持\n- 创意思考和头脑风暴\n- 学习辅导和解疑答惑\n\n**重要提醒：**\n我目前完全免费使用，没有语音功能，但你可以通过官方应用商店下载App来体验。\n\n我的知识截止到2024年7月，对于更新信息，建议开启联网搜索获取。\n\n有什么我可以帮你的吗？我很乐意为你提供帮助！✨","model_used":"","started_at":"2026-03-26T13:33:48.666481Z","completed_at":"2026-03-26T13:34:01.770055Z"},{"id":"turn-1774527363171339592","user_input":"你好，介绍一下你自己","response":"你好！很高兴认识你！😊\n\n我是DeepSeek，由深度求索公司创造的AI助手。让我重新详细介绍一下自己：\n\n**关于我：**\n- 🤖 **身份**：DeepSeek最新版本模型，专注于文本对话\n- 📚 **知识**：知识截止到2024年7月\n- 💬 **能力**：纯文本交流，支持多种语言\n\n**我能为你做什么：**\n✅ **日常问答** - 学术、生活、技术等各种问题\n✅ **文档处理** - 可读取上传的图片、PDF、Word、Excel等文件中的文字\n✅ **写作辅助** - 文章润色、邮件撰写、创意写作\n✅ **编程帮助** - 代码编写、调试、技术方案\n✅ **分析思考** - 逻辑分析、决策建议、问题解决\n\n**技术特性：**\n- 📏 **128K上下文**：支持长对话和大型文档处理\n- 🌐 **联网搜索**：需手动开启，获取实时信息\n- 📱 **多平台**：可通过官方应用商店下载App\n\n**重要说明：**\n- 💰 **完全免费**：目前没有任何收费计划\n- 🔇 **纯文本模型**：不支持语音功能和图像生成\n\n我的目标是成为你贴心的助手！无论是工作学习还是生活问题，都可以随时找我聊聊。有什么具体需要帮助的吗？✨","model_used":"","started_at":"2026-03-26T20:16:03.171342Z","completed_at":"2026-03-26T20:16:29.911659Z"},{"id":"turn-1774527428863601437","user_input":"写一首短诗","response":"我为你创作一首短诗，希望你喜欢：\n\n**《晨光》**  \n露珠轻吻花瓣时，  \n晨光悄然入帘帷。  \n新日初升心亦暖，  \n美好悄然驻此间。\n\n微风拂面思绪远，  \n万物醒来生机显。  \n平凡日子藏诗意，  \n只因你在时光里。\n\n如果你有特定的主题或风格偏好（比如爱情、自然、励志等），我可以为你量身定制一首！✨","model_used":"","started_at":"2026-03-26T20:17:08.863609Z","completed_at":"2026-03-26T20:17:18.6506Z"},{"id":"turn-1774527466307088074","user_input":"写一首短诗","response":"      我为你写一首关于星空的短诗：\n\n**《星河细语》**\n夜幕轻轻垂下帷幕，\n星光点点洒落天穹。\n每一颗都是远方的信使，\n在寂静中诉说着永恒的梦。\n\n银河如绸带般流淌，\n月光温柔照亮归途。\n在这无边的宇宙剧场，\n我们都是寻找答案的旅人。\n\n如果你想要特定主题或者风格的诗，比如爱情诗、励志诗、描写某个季节的，都可以告诉我～ ✨","model_used":"","started_at":"2026-03-26T20:17:46.307092Z","completed_at":"2026-03-26T20:17:57.080573Z"}],"created_at":"2026-03-26T11:27:41.439602Z","last_active_at":"2026-03-26T20:17:57.146042Z"},{"id":"sess-1774528264114153516","agent_id":"agent-001","user_id":"user-001","state":"Active","active_model":"deepseek-ai/DeepSeek-V3.1-Terminus","turns":[],"created_at":"2026-03-26T20:31:04.165446Z","last_active_at":"2026-03-26T20:31:04.165446Z"}],"total":3,"offset":0,"limit":20}}
+
+
+========================================
+TEST: Get Session
+REQUEST: GET http://localhost:8080/api/v1/sessions/sess-1774528264114153516
+RESPONSE:
+{"code":200,"message":"ok","data":{"id":"sess-1774528264114153516","agent_id":"agent-001","user_id":"user-001","state":"Active","active_model":"deepseek-ai/DeepSeek-V3.1-Terminus","turns":[],"created_at":"2026-03-26T20:31:04.165446Z","last_active_at":"2026-03-26T20:31:04.165446Z"}}
+
+
+========================================
+TEST: Send Message
+REQUEST: POST http://localhost:8080/api/v1/sessions/sess-1774528264114153516/messages
+BODY: {"user_input":"你好，请用一句话介绍你自己"}
+RESPONSE:
+{"code":200,"message":"ok","data":{"id":"turn-1774528264544263145","user_input":"你好，请用一句话介绍你自己","response":"您好！我是您的AI助手，随时准备为您提供帮助和解答问题。","model_used":"","started_at":"2026-03-26T20:31:04.544266563+08:00","completed_at":"2026-03-26T20:31:07.323377094+08:00"}}
+
+
+######## CHANNELS ########
+
+========================================
+TEST: Create Channel
+REQUEST: POST http://localhost:8080/api/v1/channels
+BODY: {"channel_type":"discord","plugin_id":"plugin-001"}
+RESPONSE:
+{"code":1001,"message":"validation failed","error":"Key: 'CreateChannelRequest.ChannelID' Error:Field validation for 'ChannelID' failed on the 'required' tag"}
+
+>> Extracted CHANNEL_ID: 
+
+========================================
+TEST: List Channels
+REQUEST: GET http://localhost:8080/api/v1/channels
+RESPONSE:
+{"code":200,"message":"ok","data":[]}
+
+SKIP: Channel status/delete - no channel ID
+
+######## MEMORIES ########
+
+========================================
+TEST: Create Memory
+REQUEST: POST http://localhost:8080/api/v1/memories
+BODY: {"content":"用户喜欢简洁的回答风格"}
+RESPONSE:
+{"code":5000,"message":"internal server error","error":"userID is required"}
+
+>> Extracted MEMORY_ID: 
+
+========================================
+TEST: List Memories
+REQUEST: GET http://localhost:8080/api/v1/memories
+RESPONSE:
+{"code":200,"message":"ok","data":{"memories":[],"total":0,"offset":0,"limit":20}}
+
+SKIP: Memory get/update/search/delete - no memory ID (likely auth middleware not wired)
+
+========================================
+TEST: Search Memory (no auth)
+REQUEST: POST http://localhost:8080/api/v1/memories/search
+BODY: {"query":"回答风格","limit":5}
+RESPONSE:
+{"code":5000,"message":"internal server error","error":"ERROR: type \"vector\" does not exist (SQLSTATE 42704)"}
+
+
+######## SECURITY ########
+
+========================================
+TEST: Audit Logs
+REQUEST: GET http://localhost:8080/api/v1/security/audit
+RESPONSE:
+{"code":200,"message":"ok","data":{"items":[],"page":0,"total":0}}
+
+
+######## CLEANUP ########
+
+========================================
+TEST: Delete Session
+REQUEST: DELETE http://localhost:8080/api/v1/sessions/sess-1774528264114153516
+RESPONSE:
+
+
+
+========================================
+Done. Full log saved to: api_test.log
