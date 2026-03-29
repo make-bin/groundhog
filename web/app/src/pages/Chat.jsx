@@ -4,55 +4,40 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import api from '../api/gateway.js'
 
-// ── Tool call card (inline in message stream) ─────────────────────────────────
 function ToolCallCard({ tool }) {
   const [open, setOpen] = useState(false)
   const running = !tool.done
-
-  const statusCls = running
-    ? 'border-blue-200 bg-blue-50'
-    : tool.isError
-      ? 'border-red-200 bg-red-50'
-      : 'border-green-200 bg-green-50'
-
-  const icon = running ? '⚙️' : tool.isError ? '✗' : '✓'
-  const iconCls = running
-    ? 'text-blue-500'
-    : tool.isError ? 'text-red-500' : 'text-green-600'
+  const border = running ? 'border-secondary' : tool.isError ? 'border-error' : 'border-tertiary'
+  const iconColor = running ? 'text-secondary' : tool.isError ? 'text-error' : 'text-tertiary'
+  const icon = running ? 'construction' : tool.isError ? 'cancel' : 'check_circle'
 
   return (
-    <div className={`rounded-xl border text-xs my-2 overflow-hidden ${statusCls}`}>
-      <button
-        className="flex items-center gap-2 w-full px-3 py-2 text-left"
-        onClick={() => setOpen(o => !o)}
-      >
-        <span className={`font-bold text-sm ${iconCls}`}>{icon}</span>
-        <code className="font-mono font-semibold text-gray-700">{tool.tool_name}</code>
-        {tool.duration_ms > 0 && (
-          <span className="text-gray-400 ml-1">{tool.duration_ms}ms</span>
-        )}
-        {running && (
-          <span className="ml-1 text-blue-400 animate-pulse">running…</span>
-        )}
-        <span className="ml-auto text-gray-400">{open ? '▲' : '▼'}</span>
+    <div className={`bg-surface-container-lowest rounded overflow-hidden my-2 border-l-2 ${border}`}
+      style={{ border: `1px solid rgba(70,69,84,0.1)`, borderLeft: undefined }}>
+      <button className="flex items-center gap-2 w-full px-4 py-2.5 text-left bg-surface-container/30"
+        onClick={() => setOpen(o => !o)}>
+        <span className={`material-symbols-outlined text-sm ${iconColor}`}>{icon}</span>
+        <code className="font-mono text-xs font-bold text-on-surface-variant">{tool.tool_name}</code>
+        {tool.duration_ms > 0 && <span className="text-on-surface-variant/40 text-[10px] ml-1">{tool.duration_ms}ms</span>}
+        {running && <span className="text-secondary text-[10px] ml-1 animate-pulse">running…</span>}
+        <span className="ml-auto text-on-surface-variant/40 text-[10px]">{open ? '▲' : '▼'}</span>
       </button>
-
       {open && (
-        <div className="border-t border-current/10 px-3 py-2 space-y-2">
+        <div className="px-4 py-3 space-y-2" style={{ borderTop: '1px solid rgba(70,69,84,0.1)' }}>
           {tool.args && Object.keys(tool.args).length > 0 && (
             <div>
-              <div className="text-[10px] font-semibold uppercase tracking-wide text-gray-500 mb-1">Input</div>
-              <pre className="bg-white/70 rounded p-2 overflow-auto max-h-32 text-[11px] leading-relaxed text-gray-700">
+              <div className="text-[10px] font-bold uppercase tracking-wide text-on-surface-variant/50 mb-1">Input</div>
+              <pre className="bg-surface/50 rounded p-2 overflow-auto max-h-32 text-[11px] leading-relaxed text-on-surface-variant">
                 {JSON.stringify(tool.args, null, 2)}
               </pre>
             </div>
           )}
           {tool.result && (
             <div>
-              <div className={`text-[10px] font-semibold uppercase tracking-wide mb-1 ${tool.isError ? 'text-red-500' : 'text-gray-500'}`}>
+              <div className={`text-[10px] font-bold uppercase tracking-wide mb-1 ${tool.isError ? 'text-error' : 'text-on-surface-variant/50'}`}>
                 {tool.isError ? 'Error' : 'Output'}
               </div>
-              <pre className={`rounded p-2 overflow-auto max-h-40 text-[11px] leading-relaxed ${tool.isError ? 'bg-red-50 text-red-700' : 'bg-white/70 text-gray-700'}`}>
+              <pre className={`rounded p-2 overflow-auto max-h-40 text-[11px] leading-relaxed ${tool.isError ? 'bg-error-container/10 text-error' : 'bg-surface/50 text-on-surface-variant'}`}>
                 {tool.result.length > 800 ? tool.result.slice(0, 800) + '\n…[truncated]' : tool.result}
               </pre>
             </div>
@@ -63,67 +48,52 @@ function ToolCallCard({ tool }) {
   )
 }
 
-// ── Approval modal ────────────────────────────────────────────────────────────
 function ApprovalModal({ approval, sessionId, onDone }) {
   const [deciding, setDeciding] = useState(false)
-
   async function decide(decision) {
     setDeciding(true)
-    try {
-      await api.sessions.resolveApproval(sessionId, approval.approval_id, decision)
-    } catch (e) {
-      console.error('resolveApproval failed', e)
-    }
+    try { await api.sessions.resolveApproval(sessionId, approval.approval_id, decision) } catch {}
     onDone(decision)
   }
-
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-        {/* Header */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
-          <div className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center text-lg shrink-0">
-            🔐
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(11,19,38,0.85)', backdropFilter: 'blur(8px)' }}>
+      <div className="bg-surface-container w-full max-w-md rounded-2xl shadow-2xl overflow-hidden" style={{ border: '1px solid rgba(70,69,84,0.3)' }}>
+        <div className="bg-error-container/10 px-6 py-5 flex items-center gap-3" style={{ borderBottom: '1px solid rgba(255,180,171,0.15)' }}>
+          <div className="w-10 h-10 rounded-full bg-error/10 flex items-center justify-center shrink-0">
+            <span className="material-symbols-outlined text-error">lock_person</span>
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900 text-sm">Approval Required</h3>
-            <p className="text-xs text-gray-500 mt-0.5">Agent wants to execute a tool</p>
+            <h3 className="font-headline font-bold text-error text-sm uppercase tracking-wide">Approval Required</h3>
+            <p className="text-xs text-on-surface/60 mt-0.5">Agent wants to execute a tool</p>
           </div>
         </div>
-
-        {/* Tool info */}
-        <div className="px-5 py-4">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Tool</span>
-            <code className="bg-amber-50 text-amber-800 border border-amber-200 rounded px-2 py-0.5 text-xs font-mono font-semibold">
+        <div className="px-6 py-5">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wide">Tool</span>
+            <code className="bg-error-container/20 text-error px-2 py-0.5 rounded text-xs font-mono font-bold"
+              style={{ border: '1px solid rgba(255,180,171,0.2)' }}>
               {approval.tool_name}
             </code>
           </div>
-
           {approval.args && Object.keys(approval.args).length > 0 && (
             <div>
-              <span className="text-xs font-medium text-gray-500 uppercase tracking-wide block mb-1.5">Arguments</span>
-              <pre className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs font-mono overflow-auto max-h-48 text-gray-700 leading-relaxed">
+              <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wide block mb-2">Arguments</span>
+              <pre className="bg-surface-container-lowest rounded-lg p-3 text-xs font-mono overflow-auto max-h-48 text-on-surface-variant leading-relaxed"
+                style={{ border: '1px solid rgba(70,69,84,0.2)' }}>
                 {JSON.stringify(approval.args, null, 2)}
               </pre>
             </div>
           )}
         </div>
-
-        {/* Actions */}
-        <div className="flex gap-2 px-5 pb-5">
-          <button
-            onClick={() => decide('deny')}
-            disabled={deciding}
-            className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
-          >
+        <div className="flex gap-3 px-6 pb-6">
+          <button onClick={() => decide('deny')} disabled={deciding}
+            className="flex-1 py-2.5 rounded-xl text-sm font-bold text-on-surface-variant hover:bg-surface-container-high transition-colors disabled:opacity-50"
+            style={{ border: '1px solid rgba(70,69,84,0.3)' }}>
             ✕ Deny
           </button>
-          <button
-            onClick={() => decide('approve')}
-            disabled={deciding}
-            className="flex-1 px-4 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors"
-          >
+          <button onClick={() => decide('approve')} disabled={deciding}
+            className="flex-1 py-2.5 rounded-xl text-sm font-bold text-on-primary disabled:opacity-50 transition-all hover:brightness-110"
+            style={{ background: 'linear-gradient(135deg, #4edea3, #00885d)' }}>
             {deciding ? '…' : '✓ Approve'}
           </button>
         </div>
@@ -132,55 +102,51 @@ function ApprovalModal({ approval, sessionId, onDone }) {
   )
 }
 
-// ── Single message bubble ─────────────────────────────────────────────────────
 const mdComponents = {
-  p:          ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-  h1:         ({ children }) => <h1 className="text-lg font-bold mt-3 mb-1">{children}</h1>,
-  h2:         ({ children }) => <h2 className="text-base font-bold mt-3 mb-1">{children}</h2>,
-  h3:         ({ children }) => <h3 className="text-sm font-semibold mt-2 mb-1">{children}</h3>,
-  ul:         ({ children }) => <ul className="list-disc pl-5 mb-2 space-y-0.5">{children}</ul>,
-  ol:         ({ children }) => <ol className="list-decimal pl-5 mb-2 space-y-0.5">{children}</ol>,
-  li:         ({ children }) => <li className="leading-relaxed">{children}</li>,
-  strong:     ({ children }) => <strong className="font-semibold">{children}</strong>,
-  em:         ({ children }) => <em className="italic">{children}</em>,
-  blockquote: ({ children }) => <blockquote className="border-l-4 border-gray-300 pl-3 my-2 text-gray-600 italic">{children}</blockquote>,
-  hr:         () => <hr className="my-3 border-gray-200" />,
-  a:          ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">{children}</a>,
-  code:       ({ inline, children }) => inline
-    ? <code className="bg-gray-100 text-gray-800 rounded px-1 py-0.5 text-[12px] font-mono">{children}</code>
-    : <code className="block bg-gray-900 text-gray-100 rounded-lg p-3 my-2 text-[12px] font-mono overflow-x-auto whitespace-pre">{children}</code>,
-  pre:        ({ children }) => <>{children}</>,
-  table:      ({ children }) => <div className="overflow-x-auto my-2"><table className="text-xs border-collapse w-full">{children}</table></div>,
-  thead:      ({ children }) => <thead className="bg-gray-100">{children}</thead>,
-  th:         ({ children }) => <th className="border border-gray-300 px-2 py-1 text-left font-semibold">{children}</th>,
-  td:         ({ children }) => <td className="border border-gray-300 px-2 py-1">{children}</td>,
+  p:    ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+  h1:   ({ children }) => <h1 className="text-lg font-bold mt-3 mb-1 font-headline">{children}</h1>,
+  h2:   ({ children }) => <h2 className="text-base font-bold mt-3 mb-1 font-headline">{children}</h2>,
+  h3:   ({ children }) => <h3 className="text-sm font-semibold mt-2 mb-1">{children}</h3>,
+  ul:   ({ children }) => <ul className="list-disc pl-5 mb-2 space-y-0.5">{children}</ul>,
+  ol:   ({ children }) => <ol className="list-decimal pl-5 mb-2 space-y-0.5">{children}</ol>,
+  li:   ({ children }) => <li className="leading-relaxed">{children}</li>,
+  strong: ({ children }) => <strong className="font-semibold text-on-surface">{children}</strong>,
+  blockquote: ({ children }) => <blockquote className="border-l-2 border-secondary pl-3 my-2 text-on-surface-variant italic">{children}</blockquote>,
+  a:    ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-secondary underline hover:text-primary">{children}</a>,
+  code: ({ inline, children }) => inline
+    ? <code className="bg-surface-container-high text-secondary rounded px-1 py-0.5 text-[12px] font-mono">{children}</code>
+    : <code className="block bg-surface-container-lowest text-on-surface-variant rounded-lg p-3 my-2 text-[12px] font-mono overflow-x-auto whitespace-pre">{children}</code>,
+  pre:  ({ children }) => <>{children}</>,
+  table: ({ children }) => <div className="overflow-x-auto my-2"><table className="text-xs border-collapse w-full">{children}</table></div>,
+  thead: ({ children }) => <thead className="bg-surface-container-low">{children}</thead>,
+  th:   ({ children }) => <th className="px-2 py-1 text-left font-semibold text-on-surface-variant" style={{ border: '1px solid rgba(70,69,84,0.2)' }}>{children}</th>,
+  td:   ({ children }) => <td className="px-2 py-1 text-on-surface-variant" style={{ border: '1px solid rgba(70,69,84,0.2)' }}>{children}</td>,
 }
 
 function Message({ msg }) {
-  const isUser = msg.role === 'user'
+  const isUser   = msg.role === 'user'
   const isSystem = msg.role === 'system'
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-3 px-2`}>
+    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-6 px-2`}>
       {!isUser && (
-        <div className="w-7 h-7 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center mr-2 mt-0.5 shrink-0 font-bold">
-          AI
+        <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center mr-3 mt-0.5 shrink-0">
+          <span className="material-symbols-outlined text-on-secondary" style={{ fontSize: '14px', fontVariationSettings: "'FILL' 1" }}>smart_toy</span>
         </div>
       )}
-      <div className={`max-w-[80%] min-w-0 ${isUser ? '' : 'flex-1'}`}>
-        {/* Tool call cards above the text bubble */}
+      <div className={`max-w-[80%] min-w-0 ${!isUser ? 'flex-1' : ''}`}>
         {!isUser && msg.toolCalls?.length > 0 && (
           <div className="mb-2 space-y-1">
             {msg.toolCalls.map(tc => <ToolCallCard key={tc.tool_call_id} tool={tc} />)}
           </div>
         )}
-
-        {/* Text bubble — only render if there's content */}
         {(msg.content || msg.streaming) && (
-          <div className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed shadow-sm ${
-            isUser   ? 'bg-blue-600 text-white rounded-br-sm ml-auto max-w-[75%]' :
-            isSystem ? 'bg-red-50 text-red-700 border border-red-200' :
-                       'bg-white text-gray-800 border border-gray-200 rounded-bl-sm'
-          }`}>
+          <div className={`rounded-xl px-5 py-3 text-sm leading-relaxed ${
+            isUser
+              ? 'bg-surface-container-highest text-on-surface rounded-tr-none ml-auto max-w-[75%]'
+              : isSystem
+                ? 'bg-error-container/10 text-error'
+                : 'glass-panel text-on-surface rounded-tl-none'
+          }`} style={!isUser && !isSystem ? { borderLeft: '2px solid rgba(76,215,246,0.4)' } : {}}>
             {isUser || isSystem ? (
               <span style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                 {msg.content}
@@ -198,29 +164,26 @@ function Message({ msg }) {
         )}
       </div>
       {isUser && (
-        <div className="w-7 h-7 rounded-full bg-gray-200 text-gray-600 text-xs flex items-center justify-center ml-2 mt-0.5 shrink-0 font-bold">
-          U
+        <div className="w-7 h-7 rounded-full bg-surface-container-highest flex items-center justify-center ml-3 mt-0.5 shrink-0">
+          <span className="material-symbols-outlined text-on-surface-variant" style={{ fontSize: '14px' }}>person</span>
         </div>
       )}
     </div>
   )
 }
 
-// ── Main Chat component ───────────────────────────────────────────────────────
 export default function Chat() {
   const { id: sessionId } = useParams()
-  const [session, setSession]       = useState(null)
-  const [messages, setMessages]     = useState([])
-  const [approvalQueue, setApprovalQueue] = useState([])  // queue of pending approvals
-  const [status, setStatus]         = useState('idle')
-  const [input, setInput]           = useState('')
-  const [sending, setSending]       = useState(false)
-
+  const [session, setSession]           = useState(null)
+  const [messages, setMessages]         = useState([])
+  const [approvalQueue, setApprovalQueue] = useState([])
+  const [status, setStatus]             = useState('idle')
+  const [input, setInput]               = useState('')
+  const [sending, setSending]           = useState(false)
   const bottomRef  = useRef(null)
-  const sendingRef = useRef(false)   // avoid stale closure in send()
-  const abortRef   = useRef(null)    // AbortController for current stream
+  const sendingRef = useRef(false)
+  const abortRef   = useRef(null)
 
-  // Load session + history
   useEffect(() => {
     api.sessions.get(sessionId).then(s => {
       setSession(s)
@@ -231,260 +194,185 @@ export default function Chat() {
       }
       setMessages(hist)
     }).catch(() => {})
-
-    // Abort any in-flight stream on unmount
     return () => abortRef.current?.abort()
   }, [sessionId])
 
-  // Auto-scroll
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
 
   async function send() {
     const text = input.trim()
     if (!text || sendingRef.current) return
-
     sendingRef.current = true
     setSending(true)
     setStatus('thinking')
     setInput('')
     setApprovalQueue([])
-
-    // Append user bubble immediately
-    setMessages(prev => [...prev, {
-      id: `u-${Date.now()}`, role: 'user', content: text, streaming: false,
-    }])
-
-    // Placeholder for AI response
+    setMessages(prev => [...prev, { id: `u-${Date.now()}`, role: 'user', content: text, streaming: false }])
     const aiId = `ai-${Date.now()}`
-    setMessages(prev => [...prev, {
-      id: aiId, role: 'assistant', content: '', streaming: true,
-    }])
-
+    setMessages(prev => [...prev, { id: aiId, role: 'assistant', content: '', streaming: true }])
     const controller = new AbortController()
     abortRef.current = controller
-
     let res
     try {
       res = await fetch(`/api/v1/sessions/${sessionId}/messages/stream`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-User-ID': localStorage.getItem('user_id') || 'user-001',
-        },
+        headers: { 'Content-Type': 'application/json', 'X-User-ID': localStorage.getItem('user_id') || 'user-001' },
         body: JSON.stringify({ user_input: text }),
         signal: controller.signal,
       })
     } catch (err) {
       if (err.name !== 'AbortError') {
-        setMessages(prev => prev.map(m =>
-          m.id === aiId ? { ...m, content: `Network error: ${err.message}`, streaming: false, role: 'system' } : m
-        ))
+        setMessages(prev => prev.map(m => m.id === aiId ? { ...m, content: `Network error: ${err.message}`, streaming: false, role: 'system' } : m))
       }
-      setStatus('idle')
-      setSending(false)
-      sendingRef.current = false
-      return
+      setStatus('idle'); setSending(false); sendingRef.current = false; return
     }
-
     if (!res.ok) {
       const errText = await res.text().catch(() => res.statusText)
-      setMessages(prev => prev.map(m =>
-        m.id === aiId ? { ...m, content: `Error ${res.status}: ${errText}`, streaming: false, role: 'system' } : m
-      ))
-      setStatus('idle')
-      setSending(false)
-      sendingRef.current = false
-      return
+      setMessages(prev => prev.map(m => m.id === aiId ? { ...m, content: `Error ${res.status}: ${errText}`, streaming: false, role: 'system' } : m))
+      setStatus('idle'); setSending(false); sendingRef.current = false; return
     }
-
-    // Read SSE stream
-    const reader  = res.body.getReader()
+    const reader = res.body.getReader()
     const decoder = new TextDecoder()
     let buf = ''
-
     try {
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
-
         buf += decoder.decode(value, { stream: true })
         const lines = buf.split('\n')
-        buf = lines.pop() // keep incomplete last line
-
+        buf = lines.pop()
         for (const line of lines) {
           if (!line.startsWith('data: ')) continue
-          let evt
-          try { evt = JSON.parse(line.slice(6)) } catch { continue }
-
+          let evt; try { evt = JSON.parse(line.slice(6)) } catch { continue }
           switch (evt.type) {
             case 'chunk':
-              setMessages(prev => prev.map(m =>
-                m.id === aiId ? { ...m, content: m.content + evt.chunk } : m
-              ))
-              break
-
+              setMessages(prev => prev.map(m => m.id === aiId ? { ...m, content: m.content + evt.chunk } : m)); break
             case 'tool_start':
-              // Add a running tool card to the current AI message
-              setMessages(prev => prev.map(m => {
-                if (m.id !== aiId) return m
-                const existing = m.toolCalls || []
-                return { ...m, toolCalls: [...existing, { ...evt.tool, done: false }] }
-              }))
-              setStatus('executing')
-              break
-
+              setMessages(prev => prev.map(m => m.id !== aiId ? m : { ...m, toolCalls: [...(m.toolCalls || []), { ...evt.tool, done: false }] }))
+              setStatus('executing'); break
             case 'tool_done':
-              // Update the matching tool card with result
-              setMessages(prev => prev.map(m => {
-                if (m.id !== aiId) return m
-                const updated = (m.toolCalls || []).map(tc =>
-                  tc.tool_call_id === evt.tool.tool_call_id
-                    ? { ...tc, ...evt.tool, done: true }
-                    : tc
-                )
-                return { ...m, toolCalls: updated }
-              }))
-              setStatus('thinking')
-              break
-
+              setMessages(prev => prev.map(m => m.id !== aiId ? m : { ...m, toolCalls: (m.toolCalls || []).map(tc => tc.tool_call_id === evt.tool.tool_call_id ? { ...tc, ...evt.tool, done: true } : tc) }))
+              setStatus('thinking'); break
             case 'approval_required':
-              setApprovalQueue(q => [...q, evt.approval])
-              setStatus('waiting')
-              break
-
+              setApprovalQueue(q => [...q, evt.approval]); setStatus('waiting'); break
             case 'done':
-              setMessages(prev => prev.map(m =>
-                m.id === aiId ? { ...m, streaming: false } : m
-              ))
-              setApprovalQueue([])
-              setStatus('idle')
-              setSending(false)
-              sendingRef.current = false
-              return   // stream finished cleanly
-
+              setMessages(prev => prev.map(m => m.id === aiId ? { ...m, streaming: false } : m))
+              setApprovalQueue([]); setStatus('idle'); setSending(false); sendingRef.current = false; return
             case 'error':
-              setMessages(prev => prev.map(m =>
-                m.id === aiId
-                  ? { ...m, content: m.content || evt.error, streaming: false, role: 'system' }
-                  : m
-              ))
-              setApprovalQueue([])
-              setStatus('idle')
-              setSending(false)
-              sendingRef.current = false
-              return
+              setMessages(prev => prev.map(m => m.id === aiId ? { ...m, content: m.content || evt.error, streaming: false, role: 'system' } : m))
+              setApprovalQueue([]); setStatus('idle'); setSending(false); sendingRef.current = false; return
           }
         }
       }
-    } catch (err) {
-      if (err.name !== 'AbortError') {
-        setMessages(prev => prev.map(m =>
-          m.id === aiId ? { ...m, streaming: false } : m
-        ))
-      }
-    }
-
-    setStatus('idle')
-    setSending(false)
-    sendingRef.current = false
+    } catch {}
+    setStatus('idle'); setSending(false); sendingRef.current = false
   }
 
-  function onKey(e) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() }
-  }
+  function onKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }
 
-  const statusLabel = {
-    idle:     { text: 'Ready',      cls: 'bg-green-100 text-green-700' },
-    thinking: { text: 'Thinking…',  cls: 'bg-blue-100 text-blue-700'  },
-    waiting:  { text: 'Waiting…',   cls: 'bg-amber-100 text-amber-700' },
-    executing:{ text: 'Executing…', cls: 'bg-purple-100 text-purple-700' },
-  }[status] || { text: status, cls: 'bg-gray-100 text-gray-600' }
+  const statusMap = {
+    idle:      { text: 'Ready',      cls: 'bg-tertiary-container/20 text-tertiary' },
+    thinking:  { text: 'Thinking…',  cls: 'bg-secondary/10 text-secondary' },
+    waiting:   { text: 'Waiting…',   cls: 'bg-error-container/20 text-error' },
+    executing: { text: 'Executing…', cls: 'bg-primary/10 text-primary' },
+  }
+  const statusLabel = statusMap[status] || { text: status, cls: 'bg-surface-variant text-on-surface-variant' }
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen bg-surface">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-5 py-3 flex items-center gap-3 shrink-0 shadow-sm">
-        <Link to="/sessions" className="text-gray-400 hover:text-gray-600 text-sm transition-colors">
-          ← Sessions
-        </Link>
-        <div className="h-4 w-px bg-gray-200" />
-        <div className="min-w-0">
-          <div className="text-sm font-semibold text-gray-800 truncate">
-            {session?.agent_id || 'Chat'}
+      <header className="bg-surface-container-low shrink-0 px-8 h-16 flex items-center justify-between"
+        style={{ borderBottom: '1px solid rgba(70,69,84,0.1)' }}>
+        <div className="flex items-center gap-4">
+          <Link to="/sessions" className="text-on-surface-variant hover:text-on-surface transition-colors flex items-center gap-1 text-sm">
+            <span className="material-symbols-outlined text-sm">arrow_back</span> Sessions
+          </Link>
+          <div className="h-4 w-px bg-outline-variant/20" />
+          <div className="w-9 h-9 rounded bg-primary/10 flex items-center justify-center text-primary">
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>terminal</span>
           </div>
-          <div className="text-xs text-gray-400 font-mono truncate">{sessionId}</div>
+          <div>
+            <h2 className="font-headline font-bold text-base tracking-tight flex items-center gap-2">
+              {session?.agent_id || 'Chat'}
+              <span className="bg-surface-container-highest text-[10px] px-2 py-0.5 rounded-full font-mono text-secondary">LIVE</span>
+            </h2>
+            <p className="text-[10px] text-on-surface-variant font-mono">{sessionId}</p>
+          </div>
         </div>
-        <div className="ml-auto flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-3">
           {session?.active_model && (
-            <span className="text-xs text-gray-400 hidden sm:block">
-              {session.active_model.split('/').pop()}
-            </span>
+            <span className="text-xs text-on-surface-variant hidden sm:block">{session.active_model.split('/').pop()}</span>
           )}
-          <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusLabel.cls}`}>
+          <span className={`text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wide ${statusLabel.cls}`}>
             {statusLabel.text}
           </span>
         </div>
-      </div>
+      </header>
 
-      {/* Messages area */}
-      <div className="flex-1 overflow-y-auto py-4">
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto py-8">
         {messages.length === 0 && !sending && (
-          <div className="flex flex-col items-center justify-center h-full text-gray-400 select-none">
-            <div className="text-5xl mb-3">🦔</div>
+          <div className="flex flex-col items-center justify-center h-full text-on-surface/30 select-none">
+            <span className="material-symbols-outlined mb-3" style={{ fontSize: '3rem', fontVariationSettings: "'FILL' 1" }}>smart_toy</span>
             <p className="text-sm">Start a conversation</p>
           </div>
         )}
-
         {messages.map(msg => <Message key={msg.id} msg={msg} />)}
-
-        {/* Thinking indicator when no AI bubble yet */}
         {sending && messages[messages.length - 1]?.role === 'user' && (
-          <div className="flex justify-start mb-3 px-2">
-            <div className="w-7 h-7 rounded-full bg-blue-600 text-white text-xs flex items-center justify-center mr-2 mt-0.5 shrink-0 font-bold">AI</div>
-            <div className="bg-white border border-gray-200 rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm text-gray-400 shadow-sm">
+          <div className="flex justify-start mb-6 px-2">
+            <div className="w-7 h-7 rounded-full bg-secondary flex items-center justify-center mr-3 mt-0.5 shrink-0">
+              <span className="material-symbols-outlined text-on-secondary" style={{ fontSize: '14px', fontVariationSettings: "'FILL' 1" }}>smart_toy</span>
+            </div>
+            <div className="glass-panel rounded-xl rounded-tl-none px-5 py-3 text-sm text-on-surface-variant shadow-xl">
               <span className="cursor" aria-hidden />
             </div>
           </div>
         )}
-
-        {/* Waiting for approval inline banner */}
         {approvalQueue.length > 0 && (
-          <div className="mx-4 mb-3 flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm">
-            <span className="text-amber-500 text-base shrink-0">🔐</span>
+          <div className="mx-4 mb-4 flex items-center gap-3 rounded-xl px-5 py-3 text-sm bg-error-container/10"
+            style={{ border: '1px solid rgba(255,180,171,0.2)' }}>
+            <span className="material-symbols-outlined text-error shrink-0">lock_person</span>
             <div className="flex-1 min-w-0">
-              <span className="font-medium text-amber-800">Waiting for your approval</span>
-              <span className="text-amber-600 ml-2 text-xs">
+              <span className="font-bold text-error">Waiting for approval</span>
+              <span className="text-error/70 ml-2 text-xs">
                 Tool: <code className="font-mono">{approvalQueue[0].tool_name}</code>
                 {approvalQueue.length > 1 && ` (+${approvalQueue.length - 1} more)`}
               </span>
             </div>
           </div>
         )}
-
         <div ref={bottomRef} />
       </div>
 
-      {/* Input bar */}
-      <div className="bg-white border-t border-gray-200 px-4 py-3 shrink-0">
-        <div className="flex gap-2 items-end max-w-4xl mx-auto">
-          <textarea
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={onKey}
-            placeholder="Type a message… (Enter to send, Shift+Enter for newline)"
-            rows={2}
-            disabled={sending}
-            className="flex-1 resize-none border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400 transition-colors"
-          />
-          <button
-            onClick={send}
-            disabled={!input.trim() || sending}
-            className="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-medium hover:bg-blue-700 active:bg-blue-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0"
-          >
-            {sending ? '…' : 'Send'}
-          </button>
+      {/* Input */}
+      <div className="bg-surface-container shrink-0 px-6 py-4" style={{ borderTop: '1px solid rgba(70,69,84,0.1)' }}>
+        <div className="flex gap-3 items-end max-w-4xl mx-auto">
+          <div className="flex-1 bg-surface-container-low rounded-xl flex items-end px-4 py-2.5 gap-3"
+            style={{ border: '1px solid rgba(70,69,84,0.2)' }}>
+            <textarea
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={onKey}
+              placeholder="Type a message… (Enter to send, Shift+Enter for newline)"
+              rows={2}
+              disabled={sending}
+              className="flex-1 resize-none bg-transparent border-none focus:ring-0 text-sm text-on-surface placeholder:text-on-surface-variant/30 disabled:text-on-surface/40"
+            />
+          </div>
+          <div className="flex gap-2 shrink-0">
+            {sending && (
+              <button onClick={() => abortRef.current?.abort()}
+                className="px-4 py-2.5 rounded-xl text-sm font-bold text-error flex items-center gap-1 hover:bg-error-container/10 transition-colors"
+                style={{ border: '1px solid rgba(255,180,171,0.3)' }}>
+                <span className="material-symbols-outlined text-sm">stop</span> Stop
+              </button>
+            )}
+            <button onClick={send} disabled={!input.trim() || sending}
+              className="px-5 py-2.5 rounded-xl text-sm font-bold text-on-primary disabled:opacity-40 transition-all hover:brightness-110 flex items-center gap-2"
+              style={{ background: 'linear-gradient(135deg, #c0c1ff, #8083ff)' }}>
+              Send <span className="material-symbols-outlined text-sm">send</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -493,21 +381,13 @@ export default function Chat() {
           approval={approvalQueue[0]}
           sessionId={sessionId}
           onDone={(decision) => {
-            // If denied, insert a system notice into the chat
             if (decision === 'deny') {
               setMessages(prev => [...prev, {
-                id: `deny-${Date.now()}`,
-                role: 'system',
-                content: `⛔ Tool "${approvalQueue[0].tool_name}" was denied.`,
-                streaming: false,
+                id: `deny-${Date.now()}`, role: 'system',
+                content: `⛔ Tool "${approvalQueue[0].tool_name}" was denied.`, streaming: false,
               }])
             }
-            // Pop the front of the queue; if more pending, stay in waiting
-            setApprovalQueue(q => {
-              const next = q.slice(1)
-              if (next.length === 0) setStatus('thinking')
-              return next
-            })
+            setApprovalQueue(q => { const next = q.slice(1); if (next.length === 0) setStatus('thinking'); return next })
           }}
         />
       )}

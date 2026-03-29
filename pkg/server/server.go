@@ -51,7 +51,7 @@ func (s *Server) RegisterMiddleware(middlewares ...gin.HandlerFunc) {
 }
 
 // RegisterRoutes registers application routes on the engine.
-func (s *Server) RegisterRoutes(healthHandler handler.HealthHandler, sessionHandler handler.SessionHandler, channelHandler handler.ChannelHandler, wsHandler ws.WSEventHandler, securityHandler handler.SecurityHandler, memoryHandler handler.MemoryHandler, rpcRouter *ws.RPCRouter) {
+func (s *Server) RegisterRoutes(healthHandler handler.HealthHandler, sessionHandler handler.SessionHandler, channelHandler handler.ChannelHandler, wsHandler ws.WSEventHandler, securityHandler handler.SecurityHandler, memoryHandler handler.MemoryHandler, agentHandler handler.AgentHandler, rpcRouter *ws.RPCRouter) {
 	v1 := s.engine.Group("/api/v1")
 	{
 		v1.GET("/health", healthHandler.Check)
@@ -59,6 +59,7 @@ func (s *Server) RegisterRoutes(healthHandler handler.HealthHandler, sessionHand
 		router.RegisterChannelRoutes(v1, channelHandler)
 		router.RegisterSecurityRoutes(v1, securityHandler)
 		router.RegisterMemoryRoutes(v1, memoryHandler)
+		router.RegisterAgentRoutes(v1, agentHandler)
 	}
 	// WebSocket / SSE event streaming endpoint
 	s.engine.GET("/ws", wsHandler.Handle)

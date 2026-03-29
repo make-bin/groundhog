@@ -1,5 +1,5 @@
 # @AI_GENERATED
-.PHONY: build test lint run migrate-up migrate-down clean generate frontend-build build-full docker-build docker-up docker-down perf-test perf-test-health perf-test-session perf-test-ws
+.PHONY: build test lint run migrate-up migrate-down clean generate frontend-dev frontend-build build-full docker-build docker-up docker-down perf-test perf-test-health perf-test-session perf-test-ws
 
 APP_NAME := groundhog
 BIN_DIR := bin
@@ -9,6 +9,9 @@ MIGRATIONS_DIR := migrations
 
 build:
 	go build -o $(BIN_DIR)/$(APP_NAME) $(CMD_DIR)
+
+frontend-dev:
+	cd web/app && npm install && npm run dev
 
 frontend-build:
 	cd web/app && npm install && npm run build

@@ -13,6 +13,7 @@ import (
 	"github.com/make-bin/groundhog/pkg/application/hook"
 	"github.com/make-bin/groundhog/pkg/domain/conversation/vo"
 	"github.com/make-bin/groundhog/pkg/infrastructure/adk"
+	agentinfra "github.com/make-bin/groundhog/pkg/infrastructure/agent"
 	cronfra "github.com/make-bin/groundhog/pkg/infrastructure/cron"
 	"github.com/make-bin/groundhog/pkg/infrastructure/daemon"
 	"github.com/make-bin/groundhog/pkg/infrastructure/persistence"
@@ -197,8 +198,12 @@ func runGateway(configPath string) error {
 	}
 
 	// Step 7: Domain services
-	if err := c.Provides(msgservice.NewRoutingService()); err != nil {
-		log.Error("failed to register routing service", "error", err)
+	agentRegistry := agentinfra.NewRegistry(cfg)
+	log.Info("agents loaded", "count", len(agentRegistry.List()), "default", agentRegistry.DefaultID())
+
+	agentRoutingSvc := agentinfra.NewAgentRoutingService(agentRegistry, cfg.Bindings, log)
+	if err := c.Provides(agentRoutingSvc); err != nil {
+		log.Error("failed to register agent routing service", "error", err)
 		os.Exit(1)
 	}
 	if err := c.Provides(msgservice.NewMessageChunkingService()); err != nil {
@@ -292,7 +297,8 @@ func runGateway(configPath string) error {
 			os.Exit(1)
 		}
 	}
-	if err := c.Provides(appservice.NewAgentAppService(cfg)); err != nil {
+	agentAppSvcVal := appservice.NewAgentAppService(cfg, agentRegistry)
+	if err := c.Provides(agentAppSvcVal); err != nil {
 		log.Error("failed to register agent app service", "error", err)
 		os.Exit(1)
 	}
@@ -350,6 +356,11 @@ func runGateway(configPath string) error {
 		log.Error("failed to register memory handler", "error", err)
 		os.Exit(1)
 	}
+	agentHandler := handler.NewAgentHandler()
+	if err := c.Provides(agentHandler); err != nil {
+		log.Error("failed to register agent handler", "error", err)
+		os.Exit(1)
+	}
 	// Cron RPC handler (Task 16.3)
 	if err := c.Provides(wshandler.NewCronRPCHandler()); err != nil {
 		log.Error("failed to register cron rpc handler", "error", err)
@@ -366,6 +377,11 @@ func runGateway(configPath string) error {
 		log.Error("failed to populate container", "error", err)
 		os.Exit(1)
 	}
+
+	// Wire AgentRoutingService.SessionCreator after Populate (avoids circular DI).
+	// agentAppSvcVal holds the concrete value returned by NewAgentAppService;
+	// after Populate() its inject fields are fully wired, so it can create sessions.
+	agentRoutingSvc.SetSessionCreator(agentAppSvcVal)
 
 
 	// Step 11: Wire Scheduler and Reaper into CronAppService (Task 16.3)
@@ -421,7 +437,7 @@ func runGateway(configPath string) error {
 		middleware.LoggerMiddleware(log),
 		middleware.UserIDMiddleware(),
 	)
-	srv.RegisterRoutes(healthHandler, sessionHandler, channelHandler, wsHandler, securityHandler, memoryHandler, rpcRouter)
+	srv.RegisterRoutes(healthHandler, sessionHandler, channelHandler, wsHandler, securityHandler, memoryHandler, agentHandler, rpcRouter)
 
 	// Step 14: Start HTTP server
 	errCh := make(chan error, 1)

@@ -83,3 +83,53 @@ memory:
   hybrid_vector_weight: 0.7
   hybrid_keyword_weight: 0.3
   search_limit: 10
+
+# Agents - openclaw-compatible agent definitions
+# Each agent has its own model, system_prompt, and skills.
+# The first agent with default: true (or the first entry) is the default.
+agents:
+  defaults:
+    provider: "openai_compat"
+    model: "deepseek-ai/DeepSeek-V3.1-Terminus"
+    system_prompt: "You are a helpful assistant."
+    skills: []
+
+  list:
+    - id: "main"
+      name: "Main Assistant"
+      description: "General purpose assistant"
+      default: true
+      # inherits provider/model/system_prompt from defaults
+
+    - id: "coder"
+      name: "Code Assistant"
+      description: "Specialized for software engineering tasks"
+      system_prompt: |
+        You are an expert software engineer.
+        Help with code review, debugging, architecture, and implementation.
+        Prefer concise, idiomatic code with clear explanations.
+      skills: []
+
+    - id: "support"
+      name: "Customer Support"
+      description: "Friendly customer service agent"
+      system_prompt: |
+        You are a friendly and helpful customer support agent.
+        Be empathetic, clear, and solution-focused.
+      skills: []
+
+# Bindings - route inbound messages from channels to specific agents.
+# Rules are evaluated most-specific first (channel_id+account_id > channel_id > channel+account_id > channel).
+# If no binding matches, the default agent is used.
+bindings:
+  # Example: route all telegram messages to the support agent
+  # - agent_id: "support"
+  #   comment: "Telegram → support agent"
+  #   match:
+  #     channel: "telegram"
+
+  # Example: route a specific Discord channel to the coder agent
+  # - agent_id: "coder"
+  #   comment: "Discord dev channel → coder agent"
+  #   match:
+  #     channel_id: "discord-guild-123456-channel-789"

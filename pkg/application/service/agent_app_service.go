@@ -18,6 +18,7 @@ import (
 	conversation_service "github.com/make-bin/groundhog/pkg/domain/conversation/service"
 	"github.com/make-bin/groundhog/pkg/domain/conversation/vo"
 	"github.com/make-bin/groundhog/pkg/infrastructure/adk"
+	agentinfra "github.com/make-bin/groundhog/pkg/infrastructure/agent"
 	"github.com/make-bin/groundhog/pkg/utils/config"
 	"github.com/make-bin/groundhog/pkg/utils/logger"
 )
@@ -33,6 +34,12 @@ type AgentAppService interface {
 	GetSession(ctx context.Context, id vo.SessionID) (*dto.SessionResponse, error)
 	ListSessions(ctx context.Context, filter dto.SessionListRequest) (*dto.SessionListResponse, error)
 	DeleteSession(ctx context.Context, id vo.SessionID) error
+	// GetOrCreateSession finds an existing active session for the given agent+user,
+	// or creates a new one using the agent's configured defaults.
+	// Used by AgentRoutingService to route inbound messages.
+	GetOrCreateSession(ctx context.Context, agentID, userID, channelType string) (string, error)
+	// ListAgents returns all configured agents from the registry.
+	ListAgents() []*dto.AgentResponse
 }
 
 // memoryRecallPrompt is injected into the session system prompt when memory is enabled.
@@ -50,14 +57,41 @@ type agentAppService struct {
 	CompactionSvc  conversation_service.CompactionService `inject:""`
 	Logger         logger.Logger                          `inject:"logger"`
 	cfg            *config.AppConfig
+	agentRegistry  *agentinfra.Registry
 }
 
 // NewAgentAppService creates a new AgentAppService. Dependencies are injected via struct tags.
-func NewAgentAppService(cfg *config.AppConfig) AgentAppService {
-	return &agentAppService{cfg: cfg}
+func NewAgentAppService(cfg *config.AppConfig, agentRegistry *agentinfra.Registry) AgentAppService {
+	return &agentAppService{cfg: cfg, agentRegistry: agentRegistry}
 }
 
 func (s *agentAppService) CreateSession(ctx context.Context, req *dto.CreateSessionRequest) (*dto.SessionResponse, error) {
+	// Merge agent registry defaults into the request (registry values are lower priority than explicit req fields).
+	if s.agentRegistry != nil {
+		agentCfg, err := s.agentRegistry.Get(req.AgentID)
+		if err == nil {
+			if req.Provider == "" {
+				req.Provider = agentCfg.Provider
+			}
+			if req.ModelName == "" {
+				req.ModelName = agentCfg.Model
+			}
+			if req.SystemPrompt == "" {
+				req.SystemPrompt = agentCfg.SystemPrompt
+			}
+			if len(req.Skills) == 0 {
+				req.Skills = agentCfg.Skills
+			}
+		}
+	}
+
+	// Fall back to global model defaults if still unset.
+	if req.Provider == "" && s.cfg != nil {
+		req.Provider = s.cfg.Models.DefaultProvider
+	}
+	if req.ModelName == "" && s.cfg != nil {
+		req.ModelName = s.cfg.Models.DefaultModel
+	}
 	sessionID, err := vo.NewSessionID(fmt.Sprintf("sess-%d", time.Now().UnixNano()))
 	if err != nil {
 		return nil, err
@@ -66,19 +100,7 @@ func (s *agentAppService) CreateSession(ctx context.Context, req *dto.CreateSess
 	if err != nil {
 		return nil, err
 	}
-	provider := vo.ProviderGemini
-	switch req.Provider {
-	case "openai":
-		provider = vo.ProviderOpenAI
-	case "anthropic":
-		provider = vo.ProviderAnthropic
-	case "ollama":
-		provider = vo.ProviderOllama
-	case "groq":
-		provider = vo.ProviderGroq
-	case "openai_compat":
-		provider = vo.ProviderOpenAICompat
-	}
+	provider := providerFromString(req.Provider)
 	modelCfg, err := vo.NewModelConfig(provider, req.ModelName, req.Temperature, req.MaxTokens, nil, "")
 	if err != nil {
 		return nil, err
@@ -452,4 +474,78 @@ func (s *agentAppService) ListSessions(ctx context.Context, req dto.SessionListR
 
 func (s *agentAppService) DeleteSession(ctx context.Context, id vo.SessionID) error {
 	return s.SessionRepo.Delete(ctx, id)
+}
+
+// providerFromString converts a provider name string to a ProviderType.
+func providerFromString(p string) vo.ProviderType {
+	switch p {
+	case "openai":
+		return vo.ProviderOpenAI
+	case "anthropic":
+		return vo.ProviderAnthropic
+	case "ollama":
+		return vo.ProviderOllama
+	case "groq":
+		return vo.ProviderGroq
+	case "openai_compat":
+		return vo.ProviderOpenAICompat
+	default:
+		return vo.ProviderOpenAICompat
+	}
+}
+
+// GetOrCreateSession finds an existing active session for agentID+userID,
+// or creates a new one using the agent's configured defaults.
+// This is called by AgentRoutingService when routing inbound messages.
+func (s *agentAppService) GetOrCreateSession(ctx context.Context, agentID, userID, channelType string) (string, error) {
+	agentVOID, err := vo.NewAgentID(agentID)
+	if err != nil {
+		return "", err
+	}
+	// Look for an existing active session for this agent+user.
+	filter := repository.SessionFilter{
+		AgentID: &agentVOID,
+		UserID:  &userID,
+	}
+	active := vo.SessionStateActive
+	filter.State = &active
+	sessions, _, err := s.SessionRepo.List(ctx, filter, 0, 1)
+	if err != nil {
+		return "", fmt.Errorf("get_or_create_session: list: %w", err)
+	}
+	if len(sessions) > 0 {
+		return sessions[0].ID().Value(), nil
+	}
+
+	// No active session — create one using agent defaults.
+	req := &dto.CreateSessionRequest{
+		AgentID: agentID,
+		UserID:  userID,
+	}
+	sess, err := s.CreateSession(ctx, req)
+	if err != nil {
+		return "", fmt.Errorf("get_or_create_session: create: %w", err)
+	}
+	return sess.ID, nil
+}
+
+// ListAgents returns all configured agents from the registry.
+func (s *agentAppService) ListAgents() []*dto.AgentResponse {
+	if s.agentRegistry == nil {
+		return nil
+	}
+	agents := s.agentRegistry.List()
+	result := make([]*dto.AgentResponse, 0, len(agents))
+	for _, a := range agents {
+		result = append(result, &dto.AgentResponse{
+			ID:          a.ID,
+			Name:        a.Name,
+			Description: a.Description,
+			Provider:    a.Provider,
+			Model:       a.Model,
+			Skills:      a.Skills,
+			IsDefault:   a.IsDefault,
+		})
+	}
+	return result
 }

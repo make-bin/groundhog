@@ -6,8 +6,8 @@ import "time"
 type CreateSessionRequest struct {
 	AgentID      string   `json:"agent_id" binding:"required"`
 	UserID       string   `json:"user_id" binding:"required"`
-	Provider     string   `json:"provider" binding:"required"`
-	ModelName    string   `json:"model_name" binding:"required"`
+	Provider     string   `json:"provider"`
+	ModelName    string   `json:"model_name"`
 	Temperature  float64  `json:"temperature"`
 	MaxTokens    int      `json:"max_tokens"`
 	Skills       []string `json:"skills"`
@@ -103,4 +103,15 @@ type PendingApprovalResponse struct {
 	ToolName   string         `json:"tool_name"`
 	Args       map[string]any `json:"args"`
 	CreatedAt  time.Time      `json:"created_at"`
+}
+
+// AgentResponse is the response DTO for an agent configuration.
+type AgentResponse struct {
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	Description string   `json:"description,omitempty"`
+	Provider    string   `json:"provider,omitempty"`
+	Model       string   `json:"model,omitempty"`
+	Skills      []string `json:"skills,omitempty"`
+	IsDefault   bool     `json:"is_default"`
 }

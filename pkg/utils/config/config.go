@@ -22,6 +22,76 @@ type AppConfig struct {
 	Models    ModelsConfig    `mapstructure:"models"`
 	Skills    SkillsConfig    `mapstructure:"skills"`
 	Memory    MemoryConfig    `mapstructure:"memory"`
+	Agents    AgentsConfig    `mapstructure:"agents"`
+	Bindings  []BindingConfig `mapstructure:"bindings"`
+}
+
+// AgentsConfig holds the agents section (defaults + list), mirroring openclaw agents schema.
+type AgentsConfig struct {
+	// Defaults are applied to all agents unless overridden per-agent.
+	Defaults AgentDefaultsConfig `mapstructure:"defaults"`
+	// List is the ordered list of agent entries. The first entry with default:true
+	// (or the first entry overall) is used as the default agent.
+	List []AgentEntryConfig `mapstructure:"list"`
+}
+
+// AgentDefaultsConfig holds global defaults applied to every agent.
+type AgentDefaultsConfig struct {
+	Provider     string   `mapstructure:"provider"`
+	Model        string   `mapstructure:"model"`
+	SystemPrompt string   `mapstructure:"system_prompt"`
+	Skills       []string `mapstructure:"skills"`
+	Workspace    string   `mapstructure:"workspace"`
+}
+
+// AgentEntryConfig defines a single agent's configuration.
+// Mirrors openclaw AgentEntrySchema fields relevant to groundhog.
+type AgentEntryConfig struct {
+	// ID is the unique agent identifier (e.g. "main", "coder", "support").
+	// Must be lowercase alphanumeric with optional hyphens/underscores.
+	ID string `mapstructure:"id"`
+	// Name is the human-readable display name.
+	Name string `mapstructure:"name"`
+	// Description is a short description of the agent's purpose.
+	Description string `mapstructure:"description"`
+	// Default marks this agent as the default when no agent is specified.
+	// If multiple agents have default:true, the first one wins.
+	Default bool `mapstructure:"default"`
+	// Provider overrides the global default provider for this agent.
+	Provider string `mapstructure:"provider"`
+	// Model overrides the global default model for this agent.
+	Model string `mapstructure:"model"`
+	// SystemPrompt is the agent's instruction/persona prompt.
+	SystemPrompt string `mapstructure:"system_prompt"`
+	// Skills is the list of skill names to inject for this agent.
+	// If empty, inherits from defaults.skills.
+	Skills []string `mapstructure:"skills"`
+	// Workspace is the agent's working directory (optional).
+	Workspace string `mapstructure:"workspace"`
+}
+
+// BindingConfig routes inbound messages from a channel to a specific agent.
+// Mirrors openclaw RouteBindingSchema.
+type BindingConfig struct {
+	// AgentID is the target agent for messages matching this binding.
+	AgentID string `mapstructure:"agent_id"`
+	// Comment is an optional human-readable description.
+	Comment string `mapstructure:"comment"`
+	// Match defines the conditions for this binding to apply.
+	Match BindingMatchConfig `mapstructure:"match"`
+}
+
+// BindingMatchConfig defines the match conditions for a binding.
+type BindingMatchConfig struct {
+	// Channel is the channel type to match (e.g. "discord", "telegram", "web").
+	// Empty string matches any channel.
+	Channel string `mapstructure:"channel"`
+	// AccountID matches a specific account/user ID on the channel.
+	// Empty string matches any account.
+	AccountID string `mapstructure:"account_id"`
+	// ChannelID matches a specific channel instance ID.
+	// Empty string matches any channel instance.
+	ChannelID string `mapstructure:"channel_id"`
 }
 
 // MemoryConfig holds memory context engine configuration.
@@ -228,6 +298,10 @@ func setDefaults(v *viper.Viper) {
 	// Models defaults
 	v.SetDefault("models.default_provider", "ollama")
 	v.SetDefault("models.default_model", "llama3")
+
+	// Agents defaults
+	v.SetDefault("agents.defaults.provider", "")
+	v.SetDefault("agents.defaults.model", "")
 }
 
 // @AI_GENERATED: end

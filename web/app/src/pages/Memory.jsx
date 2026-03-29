@@ -2,16 +2,16 @@ import React, { useState, useEffect } from 'react'
 import api from '../api/gateway.js'
 
 export default function Memory() {
-  const [memories, setMemories] = useState([])
-  const [loading, setLoading]   = useState(true)
-  const [error, setError]       = useState(null)
-  const [content, setContent]   = useState('')
-  const [creating, setCreating] = useState(false)
+  const [memories, setMemories]   = useState([])
+  const [loading, setLoading]     = useState(true)
+  const [error, setError]         = useState(null)
+  const [content, setContent]     = useState('')
+  const [creating, setCreating]   = useState(false)
   const [createErr, setCreateErr] = useState(null)
-  const [query, setQuery]       = useState('')
-  const [results, setResults]   = useState(null)
+  const [query, setQuery]         = useState('')
+  const [results, setResults]     = useState(null)
   const [searching, setSearching] = useState(false)
-  const [editId, setEditId]     = useState(null)
+  const [editId, setEditId]       = useState(null)
   const [editContent, setEditContent] = useState('')
 
   function load() {
@@ -29,15 +29,9 @@ export default function Memory() {
     if (!content.trim()) return
     setCreateErr(null)
     setCreating(true)
-    try {
-      await api.memories.create(content.trim())
-      setContent('')
-      load()
-    } catch (e) {
-      setCreateErr(e.message)
-    } finally {
-      setCreating(false)
-    }
+    try { await api.memories.create(content.trim()); setContent(''); load() }
+    catch (e) { setCreateErr(e.message) }
+    finally { setCreating(false) }
   }
 
   async function handleDelete(id) {
@@ -51,14 +45,9 @@ export default function Memory() {
     e.preventDefault()
     if (!query.trim()) return
     setSearching(true)
-    try {
-      const res = await api.memories.search(query.trim(), 10)
-      setResults(Array.isArray(res) ? res : [])
-    } catch (e) {
-      setResults([])
-    } finally {
-      setSearching(false)
-    }
+    try { const res = await api.memories.search(query.trim(), 10); setResults(Array.isArray(res) ? res : []) }
+    catch { setResults([]) }
+    finally { setSearching(false) }
   }
 
   async function handleUpdate(id) {
@@ -68,104 +57,184 @@ export default function Memory() {
   }
 
   return (
-    <div className="p-8 max-w-4xl">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Memory</h1>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
-        {/* Create */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-          <h2 className="font-semibold text-gray-700 text-sm mb-3">Save Memory</h2>
-          <form onSubmit={handleCreate} className="flex flex-col gap-2">
-            <textarea rows={3} className="border rounded-lg px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="Enter memory content…"
-              value={content} onChange={e => setContent(e.target.value)} />
-            {createErr && <p className="text-red-500 text-xs">{createErr}</p>}
-            <button type="submit" disabled={creating || !content.trim()}
-              className="bg-blue-600 text-white px-4 py-1.5 rounded text-sm hover:bg-blue-700 disabled:opacity-50 self-start">
-              {creating ? 'Saving…' : 'Save'}
-            </button>
-          </form>
-        </div>
-
-        {/* Search */}
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-          <h2 className="font-semibold text-gray-700 text-sm mb-3">Search Memory</h2>
-          <form onSubmit={handleSearch} className="flex gap-2 mb-3">
-            <input className="flex-1 border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="Search query…"
-              value={query} onChange={e => setQuery(e.target.value)} />
-            <button type="submit" disabled={searching || !query.trim()}
-              className="bg-purple-600 text-white px-4 py-1.5 rounded text-sm hover:bg-purple-700 disabled:opacity-50">
-              {searching ? '…' : 'Search'}
-            </button>
-          </form>
-          {results !== null && (
-            results.length === 0 ? (
-              <p className="text-gray-400 text-xs">No results.</p>
-            ) : (
-              <div className="space-y-2 max-h-48 overflow-y-auto">
-                {results.map((r, i) => {
-                  const m = r.memory ?? r
-                  return (
-                    <div key={m.id ?? i} className="bg-purple-50 rounded-lg p-2.5 text-xs">
-                      <div className="text-gray-700 mb-1">{m.content}</div>
-                      <div className="text-purple-500">score: {(r.score ?? r.hybrid_score ?? 0).toFixed(3)}</div>
-                    </div>
-                  )
-                })}
-              </div>
-            )
-          )}
+    <div className="p-10 max-w-6xl">
+      {/* Header */}
+      <div className="flex items-end justify-between mb-10">
+        <div>
+          <h2 className="font-headline text-3xl font-black text-on-surface tracking-tighter">
+            Memory <span className="text-secondary">Vault</span>
+          </h2>
+          <p className="text-on-surface-variant text-sm mt-1 flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-tertiary pulse-dot" />
+            Vector indexing active
+          </p>
         </div>
       </div>
 
-      {/* Memory list */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="px-5 py-3 border-b border-gray-100 text-sm font-semibold text-gray-700">
-          All Memories ({memories.length})
+      {/* Search */}
+      <section className="mb-10">
+        <div className="bg-surface-container-low rounded-xl p-8" style={{ border: '1px solid rgba(70,69,84,0.1)' }}>
+          <label className="font-headline text-sm font-medium text-on-surface-variant block mb-2 ml-1">Vector Query</label>
+          <form onSubmit={handleSearch} className="flex gap-4 items-end">
+            <div className="flex-1 relative group">
+              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-secondary transition-colors">search</span>
+              <input
+                className="w-full bg-surface-container-lowest rounded-lg py-4 pl-12 pr-4 text-on-surface focus:ring-2 focus:ring-secondary/50 focus:outline-none transition-all placeholder:text-on-surface-variant/30 text-sm"
+                placeholder="Describe the concept or information you're looking for..."
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+              />
+            </div>
+            <button type="submit" disabled={searching || !query.trim()}
+              className="px-8 py-4 text-sm font-bold rounded-lg text-on-primary disabled:opacity-50 transition-all hover:brightness-110 flex items-center gap-2 shrink-0"
+              style={{ background: 'linear-gradient(135deg, #c0c1ff, #8083ff)' }}>
+              <span className="material-symbols-outlined text-sm">explore</span>
+              {searching ? 'Searching…' : 'Vector Search'}
+            </button>
+          </form>
+          {results !== null && (
+            <div className="mt-6">
+              {results.length === 0 ? (
+                <p className="text-on-surface-variant/50 text-sm">No results found.</p>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant mb-3">
+                    {results.length} result{results.length !== 1 ? 's' : ''} found
+                  </p>
+                  {results.map((r, i) => {
+                    const m = r.memory ?? r
+                    return (
+                      <div key={m.id ?? i} className="bg-surface-container rounded-xl p-4" style={{ border: '1px solid rgba(70,69,84,0.1)' }}>
+                        <p className="text-sm text-on-surface leading-relaxed">{m.content}</p>
+                        <div className="mt-3 flex items-center gap-3 text-[10px] text-on-surface-variant/50">
+                          <span>Match score:</span>
+                          <span className="text-secondary font-mono font-bold">{(r.score ?? r.hybrid_score ?? 0).toFixed(3)}</span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </div>
-        {loading ? (
-          <div className="p-5 text-gray-400 text-sm">Loading...</div>
-        ) : error ? (
-          <div className="p-5 text-red-500 text-sm">{error}</div>
-        ) : memories.length === 0 ? (
-          <div className="p-5 text-gray-400 text-sm">No memories stored.</div>
-        ) : (
-          <div className="divide-y divide-gray-50">
-            {memories.map(m => (
-              <div key={m.id} className="px-5 py-3 hover:bg-gray-50 group">
-                {editId === m.id ? (
-                  <div className="flex gap-2 items-start">
-                    <textarea rows={2} className="flex-1 border rounded px-2 py-1 text-sm resize-none"
-                      value={editContent} onChange={e => setEditContent(e.target.value)} />
-                    <button onClick={() => handleUpdate(m.id)}
-                      className="bg-blue-600 text-white px-3 py-1 rounded text-xs">Save</button>
-                    <button onClick={() => setEditId(null)}
-                      className="border px-3 py-1 rounded text-xs">Cancel</button>
-                  </div>
-                ) : (
-                  <div className="flex items-start gap-3">
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-700">{m.content}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">
-                        {m.created_at ? new Date(m.created_at).toLocaleString() : ''}
-                        {m.tags?.length > 0 && (
-                          <span className="ml-2">{m.tags.map(t => `#${t}`).join(' ')}</span>
-                        )}
-                      </p>
-                    </div>
-                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => { setEditId(m.id); setEditContent(m.content) }}
-                        className="text-blue-400 hover:text-blue-600 text-xs">Edit</button>
-                      <button onClick={() => handleDelete(m.id)}
-                        className="text-red-400 hover:text-red-600 text-xs">Delete</button>
-                    </div>
-                  </div>
-                )}
+      </section>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        {/* Ingest panel */}
+        <div className="lg:col-span-1">
+          <div className="sticky top-8">
+            <h2 className="font-headline text-xl font-bold mb-4">Ingest Knowledge</h2>
+            <div className="bg-surface-container p-6 rounded-xl" style={{ border: '1px solid rgba(70,69,84,0.1)' }}>
+              <form onSubmit={handleCreate} className="flex flex-col gap-4">
+                <textarea rows={6}
+                  className="w-full bg-surface-container-lowest rounded-lg p-4 text-sm text-on-surface focus:ring-1 focus:ring-primary/50 focus:outline-none resize-none transition-all placeholder:text-on-surface-variant/20"
+                  style={{ border: '1px solid rgba(70,69,84,0.2)' }}
+                  placeholder="Paste new knowledge snippet here..."
+                  value={content}
+                  onChange={e => setContent(e.target.value)}
+                />
+                {createErr && <p className="text-error text-xs">{createErr}</p>}
+                <button type="submit" disabled={creating || !content.trim()}
+                  className="w-full py-2.5 text-sm font-bold rounded-lg text-on-secondary disabled:opacity-50 transition-all hover:brightness-110 flex items-center justify-center gap-2"
+                  style={{ background: '#4cd7f6', color: '#003640' }}>
+                  <span className="material-symbols-outlined text-sm">add</span>
+                  {creating ? 'Committing…' : 'Commit to Memory'}
+                </button>
+              </form>
+              <div className="mt-6 p-4 rounded-lg border-l-2 border-secondary/50 bg-surface-container-lowest">
+                <p className="text-[11px] text-on-surface-variant leading-relaxed">
+                  <span className="text-secondary font-bold">Pro-tip:</span> Use natural language for better semantic retrieval.
+                </p>
               </div>
-            ))}
+            </div>
           </div>
-        )}
+        </div>
+
+        {/* Memory list */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="flex justify-between items-end pb-4" style={{ borderBottom: '1px solid rgba(70,69,84,0.1)' }}>
+            <h2 className="font-headline text-xl font-bold">
+              Recent Entries
+              <span className="text-on-surface-variant/40 font-normal text-sm ml-2">({memories.length} total)</span>
+            </h2>
+          </div>
+
+          {loading ? (
+            <div className="text-on-surface/40 text-sm flex items-center gap-2">
+              <span className="material-symbols-outlined animate-spin">autorenew</span> Loading…
+            </div>
+          ) : error ? (
+            <div className="text-error text-sm">{error}</div>
+          ) : memories.length === 0 ? (
+            <div className="bg-surface-container-low rounded-xl p-12 text-center">
+              <span className="material-symbols-outlined text-on-surface-variant/30 mb-3" style={{ fontSize: '2.5rem' }}>memory</span>
+              <p className="text-on-surface-variant text-sm">No memories stored yet.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {memories.map(m => (
+                <div key={m.id} className="group bg-surface-container hover:bg-surface-container-high transition-all p-6 rounded-xl"
+                  style={{ border: '1px solid rgba(70,69,84,0.05)' }}>
+                  {editId === m.id ? (
+                    <div className="flex flex-col gap-3">
+                      <textarea rows={3}
+                        className="w-full bg-surface-container-lowest rounded-lg p-3 text-sm text-on-surface focus:ring-1 focus:ring-primary/50 focus:outline-none resize-none"
+                        style={{ border: '1px solid rgba(70,69,84,0.2)' }}
+                        value={editContent}
+                        onChange={e => setEditContent(e.target.value)}
+                      />
+                      <div className="flex gap-2">
+                        <button onClick={() => handleUpdate(m.id)}
+                          className="px-4 py-1.5 text-xs font-bold rounded text-on-primary"
+                          style={{ background: 'linear-gradient(135deg, #c0c1ff, #8083ff)' }}>Save</button>
+                        <button onClick={() => setEditId(null)}
+                          className="px-4 py-1.5 text-xs font-bold rounded text-on-surface-variant hover:text-on-surface transition-colors"
+                          style={{ border: '1px solid rgba(70,69,84,0.2)' }}>Cancel</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex items-center gap-3">
+                          <span className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-tertiary-container/30 text-tertiary text-[10px] font-bold uppercase tracking-wider">
+                            <span className="w-1.5 h-1.5 rounded-full bg-tertiary" /> Embedded
+                          </span>
+                          <span className="text-[10px] text-on-surface-variant/50 font-mono">{m.id?.slice(0, 16)}…</span>
+                        </div>
+                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => { setEditId(m.id); setEditContent(m.content) }}
+                            className="p-1.5 hover:bg-surface-variant rounded text-on-surface-variant transition-colors">
+                            <span className="material-symbols-outlined text-sm">edit</span>
+                          </button>
+                          <button onClick={() => handleDelete(m.id)}
+                            className="p-1.5 hover:bg-surface-variant rounded text-error/70 transition-colors">
+                            <span className="material-symbols-outlined text-sm">delete</span>
+                          </button>
+                        </div>
+                      </div>
+                      <p className="text-on-surface leading-relaxed text-[0.9375rem]">{m.content}</p>
+                      <div className="mt-5 flex items-center justify-between text-[11px] text-on-surface-variant/60 font-medium">
+                        <div className="flex items-center gap-4">
+                          <span className="flex items-center gap-1">
+                            <span className="material-symbols-outlined text-sm">schedule</span>
+                            {m.created_at ? new Date(m.created_at).toLocaleString() : ''}
+                          </span>
+                          {m.tags?.length > 0 && (
+                            <span className="flex items-center gap-1">
+                              <span className="material-symbols-outlined text-sm">label</span>
+                              {m.tags.map(t => `#${t}`).join(' ')}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

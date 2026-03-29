@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Groundhog AI | Cron Jobs Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-fixed-dim": "#4cd7f6",
+              "on-secondary-container": "#00424e",
+              "outline-variant": "#464554",
+              "primary-fixed-dim": "#c0c1ff",
+              "secondary-fixed": "#acedff",
+              "inverse-primary": "#494bd6",
+              "error-container": "#93000a",
+              "on-primary": "#1000a9",
+              "on-tertiary-container": "#000703",
+              "surface-bright": "#31394d",
+              "error": "#ffb4ab",
+              "primary-fixed": "#e1e0ff",
+              "on-primary-container": "#0d0096",
+              "inverse-surface": "#dae2fd",
+              "on-primary-fixed-variant": "#2f2ebe",
+              "on-primary-fixed": "#07006c",
+              "tertiary-container": "#00885d",
+              "background": "#0b1326",
+              "surface": "#0b1326",
+              "on-surface-variant": "#c7c4d7",
+              "surface-container-high": "#222a3d",
+              "surface-container": "#171f33",
+              "on-error": "#690005",
+              "surface-variant": "#2d3449",
+              "tertiary-fixed": "#6ffbbe",
+              "tertiary": "#4edea3",
+              "secondary": "#4cd7f6",
+              "surface-tint": "#c0c1ff",
+              "surface-dim": "#0b1326",
+              "tertiary-fixed-dim": "#4edea3",
+              "on-tertiary-fixed": "#002113",
+              "surface-container-low": "#131b2e",
+              "on-tertiary": "#003824",
+              "on-background": "#dae2fd",
+              "on-secondary-fixed": "#001f26",
+              "on-error-container": "#ffdad6",
+              "on-secondary-fixed-variant": "#004e5c",
+              "primary-container": "#8083ff",
+              "secondary-container": "#03b5d3",
+              "on-secondary": "#003640",
+              "on-tertiary-fixed-variant": "#005236",
+              "surface-container-lowest": "#060e20",
+              "inverse-on-surface": "#283044",
+              "outline": "#908fa0",
+              "on-surface": "#dae2fd",
+              "surface-container-highest": "#2d3449",
+              "primary": "#c0c1ff"
+            },
+            fontFamily: {
+              "headline": ["Space Grotesk"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-panel {
+            background: rgba(45, 52, 73, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(70, 69, 84, 0.2);
+        }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #0b1326; }
+        ::-webkit-scrollbar-thumb { background: #464554; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary/30">
+<!-- SideNavBar (Authority: JSON) -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-[#131b2e] flex flex-col border-r border-[#464554]/20 z-50">
+<div class="px-6 py-8">
+<h1 class="font-['Space_Grotesk'] text-[#c0c1ff] font-bold text-2xl tracking-tighter">Groundhog AI</h1>
+<p class="text-[#dae2fd]/40 text-[10px] uppercase tracking-widest mt-1">v1.0.4-stable</p>
+</div>
+<nav class="flex-1 px-2 space-y-1">
+<a class="text-[#dae2fd]/50 py-3 px-4 flex items-center gap-3 hover:bg-[#171f33] hover:text-[#dae2fd] transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-medium tracking-wide text-sm">Dashboard</span>
+</a>
+<a class="text-[#dae2fd]/50 py-3 px-4 flex items-center gap-3 hover:bg-[#171f33] hover:text-[#dae2fd] transition-all" href="#">
+<span class="material-symbols-outlined">forum</span>
+<span class="font-medium tracking-wide text-sm">Sessions</span>
+</a>
+<a class="text-[#dae2fd]/50 py-3 px-4 flex items-center gap-3 hover:bg-[#171f33] hover:text-[#dae2fd] transition-all" href="#">
+<span class="material-symbols-outlined">hub</span>
+<span class="font-medium tracking-wide text-sm">Channels</span>
+</a>
+<a class="text-[#4cd7f6] bg-[#171f33] border-l-2 border-[#4cd7f6] py-3 px-4 flex items-center gap-3" href="#">
+<span class="material-symbols-outlined">schedule</span>
+<span class="font-medium tracking-wide text-sm">Cron Jobs</span>
+</a>
+<a class="text-[#dae2fd]/50 py-3 px-4 flex items-center gap-3 hover:bg-[#171f33] hover:text-[#dae2fd] transition-all" href="#">
+<span class="material-symbols-outlined">memory</span>
+<span class="font-medium tracking-wide text-sm">Memory</span>
+</a>
+<a class="text-[#dae2fd]/50 py-3 px-4 flex items-center gap-3 hover:bg-[#171f33] hover:text-[#dae2fd] transition-all" href="#">
+<span class="material-symbols-outlined">shield</span>
+<span class="font-medium tracking-wide text-sm">Security</span>
+</a>
+<a class="text-[#dae2fd]/50 py-3 px-4 flex items-center gap-3 hover:bg-[#171f33] hover:text-[#dae2fd] transition-all" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-medium tracking-wide text-sm">Config</span>
+</a>
+</nav>
+<div class="mt-auto p-4 space-y-1">
+<a class="text-[#dae2fd]/40 flex items-center gap-3 py-2 px-4 text-xs hover:text-[#dae2fd] transition-opacity" href="#">
+<span class="material-symbols-outlined text-sm">help</span> Support
+            </a>
+<a class="text-[#dae2fd]/40 flex items-center gap-3 py-2 px-4 text-xs hover:text-[#dae2fd] transition-opacity" href="#">
+<span class="material-symbols-outlined text-sm">description</span> Docs
+            </a>
+</div>
+</aside>
+<!-- TopNavBar (Authority: JSON) -->
+<header class="fixed top-0 left-64 right-0 h-16 bg-[#0b1326] flex justify-between items-center px-8 z-40">
+<div class="flex items-center gap-4">
+<span class="font-headline font-bold text-lg tracking-tight text-[#c0c1ff]">Cron Engine</span>
+<div class="h-4 w-px bg-outline-variant/20 mx-2"></div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-tertiary shadow-[0_0_8px_rgba(78,222,163,0.5)]"></span>
+<span class="text-[10px] uppercase tracking-widest font-bold text-tertiary">Scheduler Active</span>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center bg-surface-container-low rounded-full px-4 py-1.5 border border-outline-variant/10">
+<span class="material-symbols-outlined text-on-surface-variant text-sm mr-2">search</span>
+<input class="bg-transparent border-none text-xs focus:ring-0 p-0 w-48 text-on-surface placeholder:text-on-surface-variant/40" placeholder="Search tasks..." type="text"/>
+</div>
+<div class="flex items-center gap-4 text-[#dae2fd]/60">
+<button class="hover:bg-[#171f33] p-2 rounded transition-colors"><span class="material-symbols-outlined">notifications</span></button>
+<button class="hover:bg-[#171f33] p-2 rounded transition-colors"><span class="material-symbols-outlined">person</span></button>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="ml-64 mt-16 p-10 pb-24">
+<!-- Action Header -->
+<section class="flex justify-between items-end mb-10">
+<div>
+<h2 class="font-headline text-3xl font-black text-on-surface tracking-tighter">Task Orchestration</h2>
+<p class="text-on-surface-variant text-sm mt-1 max-w-md">Manage autonomous agent triggers and system event intervals across the Groundhog network.</p>
+</div>
+<div class="flex gap-3">
+<button class="px-5 py-2.5 bg-surface-container-low border border-outline-variant/20 text-on-surface text-sm font-semibold rounded hover:bg-surface-container transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">play_arrow</span> Force Run All
+                </button>
+<button class="px-6 py-2.5 bg-gradient-to-br from-primary to-primary-container text-on-primary-container text-sm font-bold rounded shadow-lg shadow-primary/10 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">add</span> Create Task
+                </button>
+</div>
+</section>
+<!-- Stats Bento Grid -->
+<section class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
+<div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/5">
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-2">Total Tasks</p>
+<h3 class="font-headline text-4xl font-bold text-on-surface">24</h3>
+<div class="mt-4 flex items-center gap-2 text-tertiary text-xs">
+<span class="material-symbols-outlined text-xs">trending_up</span>
+<span>+2 this month</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/5">
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-2">Success Rate</p>
+<h3 class="font-headline text-4xl font-bold text-secondary">99.8<span class="text-xl">%</span></h3>
+<div class="mt-4 flex items-center gap-2 text-on-surface-variant/40 text-xs">
+<span class="material-symbols-outlined text-xs">check_circle</span>
+<span>Last 24 hours</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/5">
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-2">Next Execution</p>
+<h3 class="font-headline text-xl font-bold text-on-surface mt-2">14:00:00<span class="text-xs text-on-surface-variant block font-normal">UTC</span></h3>
+<div class="mt-3 flex items-center gap-2 text-primary text-xs">
+<span class="material-symbols-outlined text-xs">timer</span>
+<span>In 4m 12s</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/5">
+<p class="text-[10px] uppercase tracking-widest text-on-surface-variant font-bold mb-2">System Load</p>
+<div class="h-2 w-full bg-surface-container rounded-full mt-4 overflow-hidden">
+<div class="h-full bg-secondary w-[42%]"></div>
+</div>
+<p class="text-xs text-on-surface mt-2 font-mono">0.42 ops/s</p>
+</div>
+</section>
+<!-- Tabs Interface -->
+<section class="mb-6">
+<div class="flex gap-8 border-b border-outline-variant/10">
+<button class="pb-4 text-sm font-bold border-b-2 border-primary text-on-surface">Jobs List</button>
+<button class="pb-4 text-sm font-medium text-on-surface-variant/60 hover:text-on-surface transition-colors">Execution Logs</button>
+<button class="pb-4 text-sm font-medium text-on-surface-variant/60 hover:text-on-surface transition-colors">Failure Settings</button>
+</div>
+</section>
+<!-- Data Table (High Density) -->
+<section class="bg-surface-container-lowest rounded-xl overflow-hidden border border-outline-variant/10">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Job Name &amp; ID</th>
+<th class="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Schedule</th>
+<th class="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Next Run</th>
+<th class="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Last Status</th>
+<th class="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">Toggle</th>
+<th class="px-6 py-4 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/5">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container/40 transition-colors group">
+<td class="px-6 py-5">
+<div class="flex flex-col">
+<span class="text-sm font-bold text-on-surface">Memory_Consolidation_Alpha</span>
+<span class="text-[10px] font-mono text-on-surface-variant/50 uppercase tracking-tighter">CRON-0042-X</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<code class="text-xs bg-surface-container-high px-2 py-1 rounded text-secondary-fixed-dim">0 */4 * * *</code>
+</td>
+<td class="px-6 py-5">
+<span class="text-xs text-on-surface">Today, 16:00:00</span>
+</td>
+<td class="px-6 py-5">
+<div class="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-tertiary-container/20 text-tertiary text-[10px] font-bold uppercase tracking-wide">
+<span class="w-1 h-1 rounded-full bg-tertiary animate-pulse"></span> Success
+                            </div>
+</td>
+<td class="px-6 py-5">
+<div class="w-10 h-5 bg-secondary/20 rounded-full relative cursor-pointer">
+<div class="absolute right-1 top-1 w-3 h-3 bg-secondary rounded-full"></div>
+</div>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="text-on-surface-variant/40 hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container/40 transition-colors group">
+<td class="px-6 py-5">
+<div class="flex flex-col">
+<span class="text-sm font-bold text-on-surface">Daily_Market_Snapshot</span>
+<span class="text-[10px] font-mono text-on-surface-variant/50 uppercase tracking-tighter">CRON-0099-B</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="text-xs text-on-surface-variant">Every 3600ms</span>
+</td>
+<td class="px-6 py-5">
+<span class="text-xs text-on-surface">Today, 13:45:12</span>
+</td>
+<td class="px-6 py-5">
+<div class="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-error-container/20 text-error text-[10px] font-bold uppercase tracking-wide">
+<span class="w-1 h-1 rounded-full bg-error"></span> Failure
+                            </div>
+</td>
+<td class="px-6 py-5">
+<div class="w-10 h-5 bg-secondary/20 rounded-full relative cursor-pointer">
+<div class="absolute right-1 top-1 w-3 h-3 bg-secondary rounded-full"></div>
+</div>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="text-on-surface-variant/40 hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm">more_vert</span></button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container/40 transition-colors group">
+<td class="px-6 py-5">
+<div class="flex flex-col">
+<span class="text-sm font-bold text-on-surface">Agent_Health_Check</span>
+<span class="text-[10px] font-mono text-on-surface-variant/50 uppercase tracking-tighter">CRON-0112-S</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="text-xs text-on-surface-variant">Every 60000ms</span>
+</td>
+<td class="px-6 py-5">
+<span class="text-xs text-on-surface">In 42s</span>
+</td>
+<td class="px-6 py-5">
+<div class="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-surface-variant text-on-surface-variant text-[10px] font-bold uppercase tracking-wide">
+<span class="w-1 h-1 rounded-full bg-on-surface-variant"></span> Idle
+                            </div>
+</td>
+<td class="px-6 py-5">
+<div class="w-10 h-5 bg-outline-variant/20 rounded-full relative cursor-pointer">
+<div class="absolute left-1 top-1 w-3 h-3 bg-outline-variant rounded-full"></div>
+</div>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="text-on-surface-variant/40 hover:text-primary transition-colors"><span class="material-symbols-outlined text-sm">more_vert</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</section>
+<!-- Streaming Log (Mock) -->
+<section class="mt-12">
+<h4 class="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant mb-4 flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span> Live Execution Stream
+            </h4>
+<div class="bg-surface-container-lowest border border-outline-variant/20 rounded-lg p-4 font-mono text-xs leading-relaxed max-h-48 overflow-y-auto relative">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-secondary opacity-30"></div>
+<div class="space-y-1.5 pl-2">
+<p class="text-on-surface-variant/40">[13:42:01] <span class="text-secondary">SYSTEM:</span> Initializing scheduler loop...</p>
+<p class="text-on-surface-variant/40">[13:42:04] <span class="text-primary">TRIGGER:</span> Daily_Market_Snapshot detected.</p>
+<p class="text-on-surface-variant/40">[13:42:05] <span class="text-tertiary">EXECUTE:</span> Calling Payload (agentTurn) for Target ID: TRD-99</p>
+<p class="text-on-surface-variant/40">[13:42:06] <span class="text-error">ERROR:</span> Payload delivery failed. HTTP 503 Service Unavailable.</p>
+<p class="text-on-surface-variant/40">[13:42:06] <span class="text-on-surface">RETRY:</span> Initiating backoff strategy for snapshot-alpha...</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Task Creation Modal (Hidden logic simulated via fixed overlay) -->
+<!-- This represents the requested "implied UI elements" of the creation modal -->
+<div class="fixed inset-0 bg-surface/80 backdrop-blur-md z-50 flex items-center justify-center pointer-events-none opacity-0">
+<div class="bg-surface-container w-full max-w-2xl rounded-2xl border border-outline-variant/30 overflow-hidden shadow-2xl">
+<div class="bg-surface-container-high px-8 py-6 border-b border-outline-variant/10 flex justify-between items-center">
+<h3 class="font-headline text-xl font-bold">New Task Configuration</h3>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer">close</span>
+</div>
+<div class="p-8 grid grid-cols-2 gap-6">
+<div class="space-y-4">
+<div>
+<label class="block text-[10px] uppercase tracking-widest font-bold text-on-surface-variant mb-1.5">Schedule Type</label>
+<select class="w-full bg-surface-container-low border border-outline-variant/20 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-primary focus:outline-none">
+<option>Cron Expression</option>
+<option>Interval (Every)</option>
+<option>Specific Date (At)</option>
+</select>
+</div>
+<div>
+<label class="block text-[10px] uppercase tracking-widest font-bold text-on-surface-variant mb-1.5">Payload Type</label>
+<select class="w-full bg-surface-container-low border border-outline-variant/20 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-primary focus:outline-none">
+<option>agentTurn</option>
+<option>systemEvent</option>
+</select>
+</div>
+</div>
+<div class="space-y-4">
+<div>
+<label class="block text-[10px] uppercase tracking-widest font-bold text-on-surface-variant mb-1.5">Target ID (Channel/Session)</label>
+<input class="w-full bg-surface-container-low border border-outline-variant/20 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-primary focus:outline-none placeholder:text-on-surface-variant/20" placeholder="e.g. SESS-882-K" type="text"/>
+</div>
+<div>
+<label class="block text-[10px] uppercase tracking-widest font-bold text-on-surface-variant mb-1.5">Failure Alert Policy</label>
+<select class="w-full bg-surface-container-low border border-outline-variant/20 rounded px-3 py-2 text-sm focus:ring-1 focus:ring-primary focus:outline-none">
+<option>Notify Admin via Discord</option>
+<option>Auto-Disable Job</option>
+<option>Silent Logging</option>
+</select>
+</div>
+</div>
+<div class="col-span-2">
+<label class="block text-[10px] uppercase tracking-widest font-bold text-on-surface-variant mb-1.5">Cron String</label>
+<input class="w-full font-mono bg-surface-container-lowest border border-outline-variant/20 rounded px-4 py-3 text-secondary-fixed-dim focus:ring-1 focus:ring-primary focus:outline-none" type="text" value="0 0 * * *"/>
+</div>
+</div>
+<div class="px-8 py-6 bg-surface-container-low flex justify-end gap-3">
+<button class="px-5 py-2 text-sm font-bold text-on-surface-variant hover:text-on-surface transition-colors">Discard</button>
+<button class="px-8 py-2 bg-primary text-on-primary font-bold rounded">Deploy Task</button>
+</div>
+</div>
+</div>
+<!-- Footer (Authority: JSON) -->
+<footer class="fixed bottom-0 left-0 w-full flex justify-between items-center px-6 py-2 bg-[#060e20] border-t border-[#464554]/20 z-40">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 text-[#4edea3]">
+<span class="w-1.5 h-1.5 rounded-full bg-[#4edea3]"></span>
+<span class="font-['Inter'] text-[0.6875rem] uppercase tracking-widest font-semibold">API Online</span>
+</div>
+<div class="flex items-center gap-2 text-[#4edea3]">
+<span class="w-1.5 h-1.5 rounded-full bg-[#4edea3]"></span>
+<span class="font-['Inter'] text-[0.6875rem] uppercase tracking-widest font-semibold">DB Connected</span>
+</div>
+<div class="flex items-center gap-2 text-[#4edea3]">
+<span class="w-1.5 h-1.5 rounded-full bg-[#4edea3]"></span>
+<span class="font-['Inter'] text-[0.6875rem] uppercase tracking-widest font-semibold">Redis Active</span>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<span class="text-[#dae2fd]/40 font-['Inter'] text-[0.6875rem] uppercase tracking-widest font-semibold">WebSocket: Connected</span>
+<span class="text-[#dae2fd]/40 font-['Inter'] text-[0.6875rem] uppercase tracking-widest font-semibold">Active Sessions: 12</span>
+</div>
+</footer>
+</body></html>

@@ -71,6 +71,10 @@ const api = {
   security: {
     audit: (params) => get('/security/audit' + (params ? '?' + new URLSearchParams(params) : '')),
   },
+
+  agents: {
+    list: () => get('/agents'),
+  },
 }
 
 // JSON-RPC client for /rpc endpoint

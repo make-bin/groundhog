@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Groundhog AI | Memory Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "secondary-fixed-dim": "#4cd7f6",
+            "on-secondary-container": "#00424e",
+            "outline-variant": "#464554",
+            "primary-fixed-dim": "#c0c1ff",
+            "secondary-fixed": "#acedff",
+            "inverse-primary": "#494bd6",
+            "error-container": "#93000a",
+            "on-primary": "#1000a9",
+            "on-tertiary-container": "#000703",
+            "surface-bright": "#31394d",
+            "error": "#ffb4ab",
+            "primary-fixed": "#e1e0ff",
+            "on-primary-container": "#0d0096",
+            "inverse-surface": "#dae2fd",
+            "on-primary-fixed-variant": "#2f2ebe",
+            "on-primary-fixed": "#07006c",
+            "tertiary-container": "#00885d",
+            "background": "#0b1326",
+            "surface": "#0b1326",
+            "on-surface-variant": "#c7c4d7",
+            "surface-container-high": "#222a3d",
+            "surface-container": "#171f33",
+            "on-error": "#690005",
+            "surface-variant": "#2d3449",
+            "tertiary-fixed": "#6ffbbe",
+            "tertiary": "#4edea3",
+            "secondary": "#4cd7f6",
+            "surface-tint": "#c0c1ff",
+            "surface-dim": "#0b1326",
+            "tertiary-fixed-dim": "#4edea3",
+            "on-tertiary-fixed": "#002113",
+            "surface-container-low": "#131b2e",
+            "on-tertiary": "#003824",
+            "on-background": "#dae2fd",
+            "on-secondary-fixed": "#001f26",
+            "on-error-container": "#ffdad6",
+            "on-secondary-fixed-variant": "#004e5c",
+            "primary-container": "#8083ff",
+            "secondary-container": "#03b5d3",
+            "on-secondary": "#003640",
+            "on-tertiary-fixed-variant": "#005236",
+            "surface-container-lowest": "#060e20",
+            "inverse-on-surface": "#283044",
+            "outline": "#908fa0",
+            "on-surface": "#dae2fd",
+            "surface-container-highest": "#2d3449",
+            "primary": "#c0c1ff"
+          },
+          fontFamily: {
+            "headline": ["Space Grotesk"],
+            "body": ["Inter"],
+            "label": ["Inter"]
+          },
+          borderRadius: {"DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem"},
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .glass-effect {
+      background: rgba(45, 52, 73, 0.4);
+      backdrop-filter: blur(12px);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #464554;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface font-body selection:bg-primary/30">
+<!-- Side Navigation Shell -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-[#131b2e] flex flex-col border-r border-[#464554]/20 z-50">
+<div class="p-6">
+<div class="font-['Space_Grotesk'] text-[#c0c1ff] font-bold text-xl tracking-tighter">Groundhog AI</div>
+<div class="text-[#dae2fd]/40 text-[10px] uppercase tracking-widest mt-1">v1.0.4-stable</div>
+</div>
+<nav class="flex-1 px-3 space-y-1">
+<a class="text-[#dae2fd]/50 py-3 px-4 flex items-center gap-3 hover:bg-[#171f33] hover:text-[#dae2fd] transition-all group" href="#">
+<span class="material-symbols-outlined text-xl">dashboard</span>
+<span class="font-['Inter'] text-sm font-medium tracking-wide">Dashboard</span>
+</a>
+<a class="text-[#dae2fd]/50 py-3 px-4 flex items-center gap-3 hover:bg-[#171f33] hover:text-[#dae2fd] transition-all group" href="#">
+<span class="material-symbols-outlined text-xl">forum</span>
+<span class="font-['Inter'] text-sm font-medium tracking-wide">Sessions</span>
+</a>
+<a class="text-[#dae2fd]/50 py-3 px-4 flex items-center gap-3 hover:bg-[#171f33] hover:text-[#dae2fd] transition-all group" href="#">
+<span class="material-symbols-outlined text-xl">hub</span>
+<span class="font-['Inter'] text-sm font-medium tracking-wide">Channels</span>
+</a>
+<a class="text-[#dae2fd]/50 py-3 px-4 flex items-center gap-3 hover:bg-[#171f33] hover:text-[#dae2fd] transition-all group" href="#">
+<span class="material-symbols-outlined text-xl">schedule</span>
+<span class="font-['Inter'] text-sm font-medium tracking-wide">Cron Jobs</span>
+</a>
+<!-- Active Tab: Memory -->
+<a class="text-[#4cd7f6] bg-[#171f33] border-l-2 border-[#4cd7f6] py-3 px-4 flex items-center gap-3" href="#">
+<span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">memory</span>
+<span class="font-['Inter'] text-sm font-medium tracking-wide">Memory</span>
+</a>
+<a class="text-[#dae2fd]/50 py-3 px-4 flex items-center gap-3 hover:bg-[#171f33] hover:text-[#dae2fd] transition-all group" href="#">
+<span class="material-symbols-outlined text-xl">shield</span>
+<span class="font-['Inter'] text-sm font-medium tracking-wide">Security</span>
+</a>
+<a class="text-[#dae2fd]/50 py-3 px-4 flex items-center gap-3 hover:bg-[#171f33] hover:text-[#dae2fd] transition-all group" href="#">
+<span class="material-symbols-outlined text-xl">settings</span>
+<span class="font-['Inter'] text-sm font-medium tracking-wide">Config</span>
+</a>
+</nav>
+<div class="p-4 border-t border-[#464554]/20 space-y-1">
+<a class="text-[#dae2fd]/50 py-2 px-4 flex items-center gap-3 hover:text-[#dae2fd] text-xs" href="#">
+<span class="material-symbols-outlined text-lg">help</span>
+<span>Support</span>
+</a>
+<a class="text-[#dae2fd]/50 py-2 px-4 flex items-center gap-3 hover:text-[#dae2fd] text-xs" href="#">
+<span class="material-symbols-outlined text-lg">description</span>
+<span>Docs</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 min-h-screen flex flex-col pb-16">
+<!-- Top Bar -->
+<header class="bg-[#0b1326] flex justify-between items-center w-full px-10 py-4 sticky top-0 z-40">
+<h1 class="font-headline font-bold text-2xl tracking-tight">Memory <span class="text-secondary">Vault</span></h1>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></div>
+<span class="text-[10px] uppercase tracking-widest font-semibold text-tertiary">Indexing Active</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">notifications</button>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest border border-outline-variant/30 flex items-center justify-center overflow-hidden">
+<img alt="avatar" class="w-6 h-6" data-alt="minimal geometric avatar shape with shades of blue and purple on a dark circular background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuE43Vs1lBX2p5lA6k7fSbQErlubLoSA0CUDFjHxQuVaAuPOntK2KcStI5UA1nz6pEk7bEcCgu9zT6D801sX4BS8GLpUlH2NX7PUJ-Bfgt8UgwLEmo6vOybim5mm-l9gd2tOVrXSIUjLfTMx9lPsLOz38cFj5rRvq0rs3yLlo385g6unK2Q4Ad_D6obTiB3c86JLfJlw8iO9zlRUR2hEpCv3PkjEvWLgn-lkVOV4Xj7GJBtBq0YlEJffZRpJhGZdrXEQT2nuTrmSgW"/>
+</div>
+</div>
+</div>
+</header>
+<div class="px-10 py-10 max-w-7xl w-full mx-auto space-y-12">
+<!-- Semantic Search Section -->
+<section class="space-y-6">
+<div class="bg-surface-container-low rounded-xl p-8 border border-outline-variant/10 shadow-2xl">
+<div class="flex flex-col md:flex-row gap-6 items-end">
+<div class="flex-1 space-y-2">
+<label class="font-headline text-sm font-medium text-on-surface-variant ml-1">Vector Query</label>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-secondary transition-colors">search</span>
+<input class="w-full bg-surface-container-lowest border-none rounded-lg py-4 pl-12 pr-4 text-on-surface focus:ring-2 focus:ring-secondary/50 font-body transition-all placeholder:text-on-surface-variant/30" placeholder="Describe the concept or information you're looking for..." type="text"/>
+</div>
+</div>
+<div class="w-full md:w-64 space-y-4">
+<div class="flex justify-between items-center px-1">
+<label class="text-[11px] uppercase tracking-widest font-bold text-on-surface-variant">Similarity Threshold</label>
+<span class="text-secondary font-mono text-xs">0.82</span>
+</div>
+<input class="w-full h-1.5 bg-surface-container-highest rounded-lg appearance-none cursor-pointer accent-secondary" type="range"/>
+</div>
+<button class="bg-gradient-to-br from-primary to-primary-container text-on-primary-container font-headline font-bold px-8 py-4 rounded-lg flex items-center gap-2 hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-xl">explore</span>
+              Vector Search
+            </button>
+</div>
+</div>
+</section>
+<!-- New Memory Entry -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+<div class="lg:col-span-1 space-y-6">
+<div class="sticky top-32">
+<h2 class="font-headline text-xl font-bold mb-4">Ingest Knowledge</h2>
+<div class="bg-surface-container p-6 rounded-xl border border-outline-variant/10 space-y-4">
+<textarea class="w-full h-48 bg-surface-container-lowest border border-outline-variant/20 rounded-lg p-4 text-sm font-body focus:ring-1 focus:ring-primary/50 resize-none custom-scrollbar placeholder:text-on-surface-variant/20 transition-all" placeholder="Paste new knowledge snippet here..."></textarea>
+<div class="flex items-center justify-between">
+<div class="flex gap-2">
+<button class="p-2 hover:bg-surface-variant rounded-md transition-colors text-on-surface-variant" title="Attach Document">
+<span class="material-symbols-outlined text-lg">attach_file</span>
+</button>
+<button class="p-2 hover:bg-surface-variant rounded-md transition-colors text-on-surface-variant" title="Tag Content">
+<span class="material-symbols-outlined text-lg">label</span>
+</button>
+</div>
+<button class="bg-secondary text-on-secondary font-bold px-4 py-2 rounded-lg text-sm flex items-center gap-2 hover:bg-secondary-container transition-all">
+<span class="material-symbols-outlined text-lg">add</span>
+                  Commit to Memory
+                </button>
+</div>
+</div>
+<div class="mt-8 p-4 bg-surface-container-lowest rounded-lg border-l-2 border-secondary/50">
+<p class="text-[11px] text-on-surface-variant leading-relaxed">
+<span class="text-secondary font-bold">Pro-tip:</span> Use natural language for better semantic retrieval. The embedding engine works best with full-sentence context.
+              </p>
+</div>
+</div>
+</div>
+<!-- Memory List -->
+<div class="lg:col-span-2 space-y-6">
+<div class="flex justify-between items-end border-b border-outline-variant/10 pb-4">
+<h2 class="font-headline text-xl font-bold">Recent Entries <span class="text-on-surface-variant/40 font-normal text-sm ml-2">(1,284 total)</span></h2>
+<div class="flex gap-4">
+<button class="text-[10px] uppercase tracking-widest font-bold text-secondary">Newest First</button>
+<button class="text-[10px] uppercase tracking-widest font-bold text-on-surface-variant/40 hover:text-on-surface transition-colors">By Relevance</button>
+</div>
+</div>
+<!-- Memory Cards -->
+<div class="space-y-4">
+<!-- Entry 1 -->
+<div class="group bg-surface-container hover:bg-surface-container-high transition-all p-6 rounded-xl border border-outline-variant/5">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<span class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-tertiary-container/30 text-tertiary text-[10px] font-bold uppercase tracking-wider">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                    Embedded
+                  </span>
+<span class="text-[10px] text-on-surface-variant/50 font-mono">ID: mem_772x_9k</span>
+</div>
+<div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-surface-variant rounded text-on-surface-variant"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="p-1.5 hover:bg-surface-variant rounded text-error/70"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</div>
+<p class="text-on-surface leading-relaxed font-body text-[0.9375rem]">
+                Groundhog protocol version 1.0.4 introduces a decentralized vector storage architecture, allowing for local-first synchronization of agent weights across secure peer nodes. This update focuses on reducing retrieval latency by 40% in high-concurrency environments.
+              </p>
+<div class="mt-6 flex items-center justify-between text-[11px] text-on-surface-variant/60 font-medium">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">schedule</span> 2 hours ago</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">database</span> Engine-V3</span>
+</div>
+<div class="flex items-center gap-2">
+<span>Match Probability:</span>
+<span class="text-secondary font-mono">0.98</span>
+</div>
+</div>
+</div>
+<!-- Entry 2 -->
+<div class="group bg-surface-container hover:bg-surface-container-high transition-all p-6 rounded-xl border border-outline-variant/5">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<span class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-secondary-container/20 text-secondary text-[10px] font-bold uppercase tracking-wider">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                    Pending
+                  </span>
+<span class="text-[10px] text-on-surface-variant/50 font-mono">ID: mem_821v_2z</span>
+</div>
+<div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-surface-variant rounded text-on-surface-variant"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="p-1.5 hover:bg-surface-variant rounded text-error/70"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</div>
+<p class="text-on-surface/80 italic leading-relaxed font-body text-[0.9375rem]">
+                User preference noted: "Always prioritize concise responses unless asked for detailed architectural breakdowns. Maintain a neutral but helpful tone in technical documentation summaries."
+              </p>
+<div class="mt-6 flex items-center justify-between text-[11px] text-on-surface-variant/60 font-medium">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">schedule</span> 5 hours ago</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">person</span> User Input</span>
+</div>
+<div class="flex items-center gap-2">
+<span>Match Probability:</span>
+<span class="text-on-surface-variant/30 font-mono">--</span>
+</div>
+</div>
+</div>
+<!-- Entry 3 -->
+<div class="group bg-surface-container hover:bg-surface-container-high transition-all p-6 rounded-xl border border-outline-variant/5">
+<div class="flex justify-between items-start mb-4">
+<div class="flex items-center gap-3">
+<span class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-tertiary-container/30 text-tertiary text-[10px] font-bold uppercase tracking-wider">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                    Embedded
+                  </span>
+<span class="text-[10px] text-on-surface-variant/50 font-mono">ID: mem_104a_4w</span>
+</div>
+<div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-surface-variant rounded text-on-surface-variant"><span class="material-symbols-outlined text-lg">edit</span></button>
+<button class="p-1.5 hover:bg-surface-variant rounded text-error/70"><span class="material-symbols-outlined text-lg">delete</span></button>
+</div>
+</div>
+<p class="text-on-surface leading-relaxed font-body text-[0.9375rem]">
+                API documentation for endpoint /v1/agent/deploy. Requires a bearer token and a configuration payload containing agent_id and deployment_region. Default region is set to us-east-1 if not specified.
+              </p>
+<div class="mt-6 flex items-center justify-between text-[11px] text-on-surface-variant/60 font-medium">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">schedule</span> 1 day ago</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">description</span> API Docs</span>
+</div>
+<div class="flex items-center gap-2">
+<span>Match Probability:</span>
+<span class="text-secondary font-mono">0.65</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Pagination-like Load More -->
+<button class="w-full py-4 border border-dashed border-outline-variant/30 rounded-xl text-on-surface-variant hover:border-primary/50 hover:text-primary transition-all text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 group">
+<span class="material-symbols-outlined group-hover:rotate-180 transition-transform">autorenew</span>
+            Load older memories
+          </button>
+</div>
+</section>
+</div>
+</main>
+<!-- Footer Shell -->
+<footer class="fixed bottom-0 left-0 w-full flex justify-between items-center px-6 py-2 bg-[#060e20] border-t border-[#464554]/20 z-40">
+<div class="flex items-center gap-6">
+<div class="font-['Inter'] text-[0.6875rem] uppercase tracking-widest font-semibold text-[#4edea3] flex items-center gap-2">
+<span class="w-1.5 h-1.5 rounded-full bg-[#4edea3]"></span>
+        System Health: API Online | DB Connected | Redis Active
+      </div>
+</div>
+<div class="flex gap-6">
+<div class="font-['Inter'] text-[0.6875rem] uppercase tracking-widest font-semibold text-[#dae2fd]/40">WebSocket: Connected</div>
+<div class="font-['Inter'] text-[0.6875rem] uppercase tracking-widest font-semibold text-[#dae2fd]/40">Active Sessions: 12</div>
+</div>
+</footer>
+</body></html>

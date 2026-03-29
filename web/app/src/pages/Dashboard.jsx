@@ -2,29 +2,40 @@ import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import api, { cronApi } from '../api/gateway.js'
 
-function StatCard({ title, value, sub, to, color = 'blue' }) {
-  const colors = {
-    blue:  'bg-blue-50 border-blue-200 text-blue-700',
-    green: 'bg-green-50 border-green-200 text-green-700',
-    purple:'bg-purple-50 border-purple-200 text-purple-700',
-    amber: 'bg-amber-50 border-amber-200 text-amber-700',
-  }
-  const card = (
-    <div className={`border rounded-xl p-5 ${colors[color]} transition-shadow hover:shadow-md`}>
-      <div className="text-sm font-medium opacity-70 mb-1">{title}</div>
-      <div className="text-3xl font-bold">{value ?? '—'}</div>
-      {sub && <div className="text-xs mt-1 opacity-60">{sub}</div>}
+function StatCard({ icon, iconColor, label, value, sub, badge, to, barColor, barPct }) {
+  const inner = (
+    <div className="bg-surface-container-low p-5 rounded-xl border border-transparent hover:border-primary/20 transition-all group cursor-pointer">
+      <div className="flex justify-between items-start mb-4">
+        <div className={`p-2 rounded-lg ${iconColor}/10`}>
+          <span className={`material-symbols-outlined ${iconColor}`}>{icon}</span>
+        </div>
+        {badge && (
+          <span className={`text-[10px] font-bold uppercase tracking-widest ${iconColor} bg-current/10 px-2 py-0.5 rounded-full`}
+            style={{ background: 'rgba(78,222,163,0.1)', color: 'inherit' }}>
+            {badge}
+          </span>
+        )}
+      </div>
+      <h3 className="text-on-surface-variant text-xs font-medium uppercase tracking-tighter">{label}</h3>
+      <p className="font-headline text-3xl font-bold text-on-surface mt-1">{value ?? '—'}</p>
+      {sub && <p className="text-[10px] text-on-surface/40 mt-3 flex items-center gap-1">{sub}</p>}
+      {barColor && (
+        <div className="mt-4 h-1 w-full bg-surface-container rounded-full overflow-hidden">
+          <div className={`h-full ${barColor}`} style={{ width: `${barPct ?? 100}%` }} />
+        </div>
+      )}
     </div>
   )
-  return to ? <Link to={to}>{card}</Link> : card
+  return to ? <Link to={to}>{inner}</Link> : inner
 }
 
 export default function Dashboard() {
-  const [health, setHealth]     = useState(null)
-  const [sessions, setSessions] = useState(null)
-  const [channels, setChannels] = useState(null)
-  const [memories, setMemories] = useState(null)
+  const [health, setHealth]       = useState(null)
+  const [sessions, setSessions]   = useState(null)
+  const [channels, setChannels]   = useState(null)
+  const [memories, setMemories]   = useState(null)
   const [cronStatus, setCronStatus] = useState(null)
+  const [agents, setAgents]       = useState(null)
 
   useEffect(() => {
     api.health().then(setHealth).catch(() => setHealth({ status: 'error' }))
@@ -32,79 +43,172 @@ export default function Dashboard() {
     api.channels.list().then(d => setChannels(Array.isArray(d) ? d : [])).catch(() => setChannels([]))
     api.memories.list().then(d => setMemories(d?.memories ?? [])).catch(() => setMemories([]))
     cronApi.status().then(setCronStatus).catch(() => {})
+    api.agents.list().then(d => setAgents(Array.isArray(d) ? d : [])).catch(() => setAgents([]))
   }, [])
 
   const dbOk    = health?.database === 'ok'
   const redisOk = health?.redis === 'ok' || health?.redis?.startsWith?.('ok')
 
   return (
-    <div className="p-8 max-w-5xl">
-      <h1 className="text-2xl font-bold text-gray-800 mb-2">Dashboard</h1>
-      <p className="text-gray-500 mb-8 text-sm">Groundhog Gateway overview</p>
-
-      {/* Status bar */}
-      <div className="flex gap-3 mb-8 flex-wrap">
-        {[
-          { label: 'API',      ok: health !== null,  val: health?.status },
-          { label: 'Database', ok: dbOk,             val: dbOk ? 'ok' : health?.database ?? '…' },
-          { label: 'Redis',    ok: redisOk,          val: redisOk ? 'ok' : (health?.redis ?? '…') },
-        ].map(({ label, ok, val }) => (
-          <div key={label} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border ${
-            ok ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-600'
-          }`}>
-            <span>{ok ? '●' : '○'}</span>
-            <span>{label}</span>
-            <span className="opacity-60">{val}</span>
-          </div>
-        ))}
+    <div className="p-10 max-w-6xl">
+      {/* Page header */}
+      <div className="mb-10">
+        <h2 className="font-headline text-3xl font-black text-on-surface tracking-tighter">System Overview</h2>
+        <p className="text-on-surface-variant text-sm mt-1">Real-time telemetry across the Groundhog network</p>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-        <StatCard title="Sessions"  value={sessions?.length}  sub="total"  to="/sessions"  color="blue"   />
-        <StatCard title="Channels"  value={channels?.length}  sub="total"  to="/channels"  color="green"  />
-        <StatCard title="Memories"  value={memories?.length}  sub="stored" to="/memory"    color="purple" />
-        <StatCard title="Cron Jobs" value={cronStatus?.enabled_jobs ?? '…'} sub={cronStatus?.running ? 'scheduler running' : 'scheduler stopped'} to="/cron" color="amber" />
+      {/* Stats bento grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        <StatCard
+          icon="health_metrics" iconColor="text-tertiary"
+          label="System Health" value={health ? '100%' : '…'}
+          badge={health ? 'Optimal' : null}
+          barColor="bg-tertiary" barPct={100}
+          to="/"
+        />
+        <StatCard
+          icon="smart_toy" iconColor="text-primary"
+          label="Agents" value={agents?.length ?? '…'}
+          badge={agents?.find(a => a.is_default) ? `default: ${agents.find(a => a.is_default).id}` : null}
+          to="/agents"
+        />
+        <StatCard
+          icon="forum" iconColor="text-secondary"
+          label="Active Sessions" value={sessions?.length ?? '…'}
+          badge={sessions?.filter(s => s.state === 'Active').length > 0 ? `+${sessions.filter(s => s.state === 'Active').length} active` : null}
+          to="/sessions"
+        />
+        <StatCard
+          icon="hub" iconColor="text-on-surface-variant"
+          label="Channels" value={channels?.length ?? '…'}
+          sub={<><span className="material-symbols-outlined text-[10px]">sync</span> All nodes synced</>}
+          to="/channels"
+        />
+      </div>
+
+      {/* Middle: health + cron */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+        {/* Health panel */}
+        <div className="lg:col-span-2 bg-surface-container-low rounded-2xl overflow-hidden flex flex-col">
+          <div className="p-6 flex justify-between items-center" style={{ borderBottom: '1px solid rgba(70,69,84,0.1)' }}>
+            <div>
+              <h2 className="font-headline text-xl font-bold text-primary">Real-time System Health</h2>
+              <p className="text-xs text-on-surface-variant font-medium mt-1 uppercase tracking-widest">Global Telemetry</p>
+            </div>
+            <div className="flex items-center gap-2 bg-surface-container rounded-lg px-3 py-1.5" style={{ border: '1px solid rgba(70,69,84,0.2)' }}>
+              <span className="w-2 h-2 rounded-full bg-tertiary pulse-dot" />
+              <span className="text-[10px] font-bold uppercase tracking-wider text-tertiary">Live</span>
+            </div>
+          </div>
+          <div className="p-8 grid grid-cols-3 gap-8">
+            {[
+              { label: 'API Cluster',   icon: 'bolt',     ok: health !== null, sub: 'Response: ~12ms' },
+              { label: 'Database',      icon: 'database', ok: dbOk,            sub: 'Load: nominal' },
+              { label: 'Redis Cache',   icon: 'memory',   ok: redisOk,         sub: 'Hits: active' },
+            ].map(({ label, icon, ok, sub }) => (
+              <div key={label} className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-on-surface-variant/60 uppercase">{label}</span>
+                  <span className={`text-[10px] font-bold ${ok ? 'text-tertiary' : 'text-error'}`}>{ok ? 'Stable' : 'Error'}</span>
+                </div>
+                <div className={`p-4 bg-surface-container-lowest rounded-xl border-l-2 ${ok ? 'border-tertiary' : 'border-error'}`}>
+                  <div className="flex items-center gap-3">
+                    <span className={`material-symbols-outlined ${ok ? 'text-tertiary' : 'text-error'}`}>{icon}</span>
+                    <div>
+                      <p className="text-sm font-bold text-on-surface">{ok ? 'Active' : 'Offline'}</p>
+                      <p className="text-[10px] text-on-surface-variant/50">{sub}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Cron scheduler */}
+        <div className="bg-surface-container rounded-2xl p-6" style={{ border: '1px solid rgba(70,69,84,0.1)' }}>
+          <div className="flex items-center gap-3 mb-8">
+            <div className="p-2 bg-primary-container/20 rounded-lg">
+              <span className="material-symbols-outlined text-primary-container">watch_later</span>
+            </div>
+            <h2 className="font-headline text-lg font-bold">Cron Scheduler</h2>
+          </div>
+          <div className="bg-surface-container-lowest rounded-xl p-5 mb-8 text-center relative overflow-hidden" style={{ border: '1px solid rgba(70,69,84,0.1)' }}>
+            <div className="absolute top-0 right-0 p-2">
+              <span className="material-symbols-outlined text-primary-container/20" style={{ fontSize: '2.5rem' }}>timer</span>
+            </div>
+            <p className="text-[10px] font-bold text-on-surface-variant/40 uppercase tracking-widest mb-1">Scheduler Status</p>
+            <p className={`font-headline text-2xl font-bold ${cronStatus?.running ? 'text-tertiary' : 'text-error'}`}>
+              {cronStatus ? (cronStatus.running ? 'Running' : 'Stopped') : '…'}
+            </p>
+            <p className="text-[10px] text-on-surface-variant mt-2 font-medium">
+              {cronStatus?.enabled_jobs ?? 0} enabled · {cronStatus?.running_jobs ?? 0} running
+            </p>
+          </div>
+          <div className="space-y-3">
+            <h3 className="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Quick Links</h3>
+            {[
+              { label: 'Manage Agents',   to: '/agents',   color: 'bg-primary' },
+              { label: 'Manage Sessions', to: '/sessions', color: 'bg-secondary' },
+              { label: 'Memory Store',    to: '/memory',   color: 'bg-tertiary' },
+            ].map(({ label, to, color }) => (
+              <Link key={to} to={to}
+                className="flex items-center justify-between p-3 bg-surface-container-low rounded-lg hover:bg-surface-container-highest transition-colors group">
+                <div className="flex items-center gap-3">
+                  <div className={`w-1.5 h-1.5 rounded-full ${color}`} />
+                  <span className="text-xs font-medium">{label}</span>
+                </div>
+                <span className="material-symbols-outlined text-on-surface-variant/40 group-hover:text-primary transition-colors text-sm">arrow_forward</span>
+              </Link>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Recent sessions */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="font-semibold text-gray-700 text-sm">Recent Sessions</h2>
-          <Link to="/sessions" className="text-xs text-blue-600 hover:underline">View all →</Link>
+      <div className="bg-surface-container-lowest rounded-xl overflow-hidden" style={{ border: '1px solid rgba(70,69,84,0.1)' }}>
+        <div className="px-6 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(70,69,84,0.1)' }}>
+          <h2 className="font-headline text-lg font-bold">Recent Sessions</h2>
+          <Link to="/sessions" className="text-xs text-secondary hover:text-primary transition-colors flex items-center gap-1">
+            View all <span className="material-symbols-outlined text-sm">arrow_forward</span>
+          </Link>
         </div>
         {!sessions ? (
-          <div className="p-5 text-gray-400 text-sm">Loading...</div>
+          <div className="p-6 text-on-surface/40 text-sm">Loading...</div>
         ) : sessions.length === 0 ? (
-          <div className="p-5 text-gray-400 text-sm">No sessions yet.</div>
+          <div className="p-6 text-on-surface/40 text-sm">No sessions yet.</div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-gray-500 text-xs">
+            <thead className="bg-surface-container-low/50">
               <tr>
-                <th className="text-left px-5 py-2">Session ID</th>
-                <th className="text-left px-5 py-2">User</th>
-                <th className="text-left px-5 py-2">Model</th>
-                <th className="text-left px-5 py-2">State</th>
-                <th className="text-left px-5 py-2">Created</th>
+                {['Session ID', 'Agent', 'User', 'Model', 'State', 'Created'].map(h => (
+                  <th key={h} className="text-left px-6 py-3 text-[10px] uppercase tracking-widest font-bold text-on-surface-variant">{h}</th>
+                ))}
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y" style={{ borderColor: 'rgba(70,69,84,0.05)' }}>
               {sessions.slice(0, 5).map(s => (
-                <tr key={s.id} className="border-t border-gray-50 hover:bg-gray-50">
-                  <td className="px-5 py-2.5 font-mono text-xs text-gray-500">
-                    <Link to={`/sessions/${s.id}/chat`} className="text-blue-600 hover:underline">
-                      {s.id?.slice(0, 24)}…
+                <tr key={s.id} className="hover:bg-surface-container/40 transition-colors">
+                  <td className="px-6 py-4">
+                    <Link to={`/sessions/${s.id}/chat`} className="font-mono text-xs text-secondary hover:text-primary transition-colors">
+                      {s.id?.slice(0, 28)}…
                     </Link>
                   </td>
-                  <td className="px-5 py-2.5 text-gray-600">{s.user_id || '-'}</td>
-                  <td className="px-5 py-2.5 text-gray-500 text-xs">{s.active_model?.split('/').pop() || '-'}</td>
-                  <td className="px-5 py-2.5">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                      s.state === 'Active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-                    }`}>{s.state}</span>
+                  <td className="px-6 py-4 text-on-surface-variant text-xs font-mono">{s.agent_id || '—'}</td>
+                  <td className="px-6 py-4 text-on-surface-variant text-xs">{s.user_id || '—'}</td>
+                  <td className="px-6 py-4 text-on-surface-variant text-xs">{s.active_model?.split('/').pop() || '—'}</td>
+                  <td className="px-6 py-4">
+                    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide ${
+                      s.state === 'Active'
+                        ? 'bg-tertiary-container/20 text-tertiary'
+                        : 'bg-surface-variant text-on-surface-variant'
+                    }`}>
+                      {s.state === 'Active' && <span className="w-1 h-1 rounded-full bg-tertiary pulse-dot" />}
+                      {s.state}
+                    </span>
                   </td>
-                  <td className="px-5 py-2.5 text-gray-400 text-xs">
-                    {s.created_at ? new Date(s.created_at).toLocaleString() : '-'}
+                  <td className="px-6 py-4 text-on-surface-variant/50 text-xs">
+                    {s.created_at ? new Date(s.created_at).toLocaleString() : '—'}
                   </td>
                 </tr>
               ))}

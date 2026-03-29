@@ -51,3 +51,11 @@ func RegisterMemoryRoutes(rg *gin.RouterGroup, memoryHandler handler.MemoryHandl
 		memories.POST("/search", memoryHandler.Search)
 	}
 }
+
+// RegisterAgentRoutes registers agent-related routes on the given router group.
+func RegisterAgentRoutes(rg *gin.RouterGroup, agentHandler handler.AgentHandler) {
+	agents := rg.Group("/agents")
+	{
+		agents.GET("", agentHandler.List)
+	}
+}

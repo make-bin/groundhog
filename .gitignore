@@ -1,0 +1,45 @@
+# ── Build outputs ─────────────────────────────────────────────
+bin/
+dist/
+
+# ── Go ────────────────────────────────────────────────────────
+*.exe
+*.test
+*.out
+vendor/
+
+# ── Frontend ──────────────────────────────────────────────────
+web/app/node_modules/
+web/app/dist/
+
+# ── Config (secrets) ──────────────────────────────────────────
+configs/config.yaml
+configs/*.yaml
+!configs/config.yaml_bak
+
+# ── openclaw (local agent config directory) ───────────────────
+openclaw/
+
+# ── Skills / agent dirs ───────────────────────────────────────
+skills/
+.agents/
+.openclaw/
+
+# ── Logs & temp ───────────────────────────────────────────────
+*.log
+tmp/
+.tmp/
+
+# ── OS ────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── IDE ───────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ── Docker ────────────────────────────────────────────────────
+.env
+.env.*
